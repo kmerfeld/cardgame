@@ -5,9 +5,11 @@ extern crate serde_json;
 
 mod card;
 mod deck;
+mod board;
 
 use clap::{Arg, App, SubCommand};
 use deck::create_deck;
+use board::*;
 
 
 
@@ -40,9 +42,13 @@ fn main() {
                          .help("The number of cards in the deck")
                          .takes_value(true)
                          .default_value("30")))
-        .subcommand(SubCommand::with_name("server")
-                    .about("Start a server (not working yet)"))
         .subcommand(SubCommand::with_name("client")
+                    .arg(Arg::with_name("test")
+                        .long("start")
+                        .short("s")
+                        .takes_value(true)
+                        .default_value("thing")))
+        .subcommand(SubCommand::with_name("server")
                     .about("Start a client (not working yet)"))
         .get_matches();
 
@@ -64,10 +70,15 @@ fn main() {
         ("server", Some(server_matches)) => {
             println!("Not implemented yet");
         },
-        ("client", Some(client_matches)) => {
-            println!("Not implemented yet");
-        },
         */
+        ("client", Some(client_matches)) => {
+    
+            //make 2 players with decks
+            let p1_deck = create_deck(10, 2000, "p1_deck".to_owned());
+            let p2_deck = create_deck(10, 2000, "p2_deck".to_owned());
+            let board = Board::new("p1".to_owned(), "p2".to_owned(), p1_deck, p2_deck);
+            board.print();
+        },
         ("", None)   => println!("Look at ./cardgame --help"),
         _ => unreachable!(), // If all subcommands are defined above, anything else is unreachabe!()
     }
