@@ -3,17 +3,12 @@ extern crate serde_json;
 #[macro_use] extern crate serde_derive;
 #[macro_use] extern crate clap;
 
-mod card;
-mod deck;
 mod board;
+mod client;
 
 use clap::{Arg, App, SubCommand};
-use deck::create_deck;
 use board::*;
-
-
-
-
+use client::gameloop;
 
 fn main() {
     //clap options
@@ -77,7 +72,8 @@ fn main() {
             let p1_deck = create_deck(10, 2000, "p1_deck".to_owned());
             let p2_deck = create_deck(10, 2000, "p2_deck".to_owned());
             let board = Board::new("p1".to_owned(), "p2".to_owned(), p1_deck, p2_deck);
-            board.print();
+            //board.print();
+            gameloop(board);
         },
         ("", None)   => println!("Look at ./cardgame --help"),
         _ => unreachable!(), // If all subcommands are defined above, anything else is unreachabe!()
