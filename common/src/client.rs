@@ -46,6 +46,7 @@ pub fn gameloop (mut board: Board) {
             current_player = &mut player_2;
             other_player = &mut player_1;
         } 
+        println!("#### This player's turn {}", current_player.name);
         current_player.print();    
         //First the player draws a card
         draw_card(current_player);
@@ -58,21 +59,38 @@ pub fn gameloop (mut board: Board) {
             let mut line = String::new();
             let stdin = io::stdin();
             stdin.lock().read_line(&mut line).expect("Could not read line");
-            println!("{}", line);
 
-            let mut split = line.split_whitespace();
+            let  split = line.split_whitespace();
             let split: Vec<&str> = split.collect();
 
-            if split[0] == "play" {
-                //For now this will just be a 0-1 position in hand
-                let x: i32 = split[1].parse().unwrap();
-                current_player.play(1);
+            if split.is_empty()  { 
+                println!("enter a command, valid commands are \"play\", \"attack\", \"look\", and \"help\"");
+            }
+
+            else if split[0] == "play" {
+                //For now this will just be a index position in hand
+
+                //make sure that they had a second argument
+                if split.len() < 2 {
+                    println!("not enough arguments, try \"play 1\"");
+                }
+                else {
+                    let index_of_card: i32 = split[1].parse().unwrap();
+                    if current_player.hand.len() < index_of_card as usize {
+                        println!("invalid card choice, max is {}", current_player.hand.len());
+                    }
+                    else {
+
+                        current_player.play(index_of_card);
+
+                    }
+                }
             }
             else if split[0] == "attack" {
 
             }
             else if split[0] == "look" {
-
+                current_player.print();
             }
 
             else if split[0] == "end" {
@@ -80,10 +98,11 @@ pub fn gameloop (mut board: Board) {
             }
             else {
                 println!("enter a command, valid commands are \"play\", \"attack\", \"look\", and \"help\"");
-
-
             }
+
         }
+        if turn == false { turn = true; }
+        else { turn = false; }
     }
 
 
