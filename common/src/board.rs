@@ -79,6 +79,9 @@ impl Player {
             i.pretty_print();
         }
     }
+    pub fn play(&mut self, position_in_hand: i32) {
+        self.field.push(self.hand.remove(position_in_hand as usize));
+    }
 }
 
 pub fn create_player(name: String, deck: Deck) -> Player {
