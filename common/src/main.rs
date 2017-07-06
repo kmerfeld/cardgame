@@ -71,9 +71,9 @@ fn main() {
             //make 2 players with decks
             let p1_deck = create_deck(10, 2000, "p1_deck".to_owned());
             let p2_deck = create_deck(10, 2000, "p2_deck".to_owned());
-            let board = Board::new("p1".to_owned(), "p2".to_owned(), p1_deck, p2_deck);
-            //board.print();
-            gameloop(board);
+            let p1 = create_player("p1".to_owned(), p1_deck);
+            let p2 = create_player("p2".to_owned(), p2_deck);
+            gameloop(p1, p2);
         },
         ("", None)   => println!("Look at ./cardgame --help"),
         _ => unreachable!(), // If all subcommands are defined above, anything else is unreachabe!()

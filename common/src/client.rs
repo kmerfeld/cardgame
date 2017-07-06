@@ -7,13 +7,10 @@ use std::io::{self, BufRead};
 use board::*;
 
 
-
-
-pub fn gameloop (mut board: Board) {
+pub fn gameloop (mut player_1: Player, mut player_2: Player) {
     //Current players turn
     //let mut turn: Player = board.player_1.clone();
-    let mut player_1: Player = board.player_1.clone();
-    let mut player_2: Player = board.player_2.clone();
+
 
 
     //if rand::thread().gen_range(1,2) == 2 { turn = &board.player_2;}
@@ -23,6 +20,7 @@ pub fn gameloop (mut board: Board) {
 
     /* Board initialization*/
     //shuffle both decks
+    //TODO: shuffle
     //player_1.deck = task_rng().shuffle(player_1.deck);
     //player_1.deck = task_rng().shuffle(player_1.deck);
     // draw cards for each player
@@ -46,7 +44,7 @@ pub fn gameloop (mut board: Board) {
             current_player = &mut player_2;
             other_player = &mut player_1;
         } 
-        println!("#### This player's turn {}", current_player.name);
+        println!("\n#### This player's turn {}", current_player.name);
         current_player.print();    
         //First the player draws a card
         draw_card(current_player);
@@ -68,8 +66,6 @@ pub fn gameloop (mut board: Board) {
             }
 
             else if split[0] == "play" {
-                //For now this will just be a index position in hand
-
                 //make sure that they had a second argument
                 if split.len() < 2 {
                     println!("not enough arguments, try \"play 1\"");
@@ -88,6 +84,42 @@ pub fn gameloop (mut board: Board) {
             }
             else if split[0] == "attack" {
 
+                //This should all be moved to the board section
+                if split.len() < 3 {
+                    println!("not enough arguments, try \"attack your_monster enemy\" to attack opponent, use 999");
+                }
+                else {
+
+                    let index_attacker: i32 = split[1].parse().unwrap();
+                    let index_target: i32 = split[2].parse().unwrap();
+
+                    if current_player.field.len() < index_attacker as usize {
+                        println!("invalid attacker choice, max is {}", current_player.field.len());
+                    }
+                    else if other_player.field.len() < index_attacker as usize {
+                        println!("invalid target choice, max is {}", other_player.field.len());
+                    }
+                    let attacker: i32 = split[1].parse().unwrap();
+                    let target: i32 = split[2].parse().unwrap();
+
+                    //remove health
+                    current_player.field[index_attacker as usize].health -= other_player.field[index_target as usize].attack;
+                    other_player.field[index_target as usize].health -= current_player.field[index_attacker as usize].attack;
+
+
+                    //move dead monsters to the graveyard
+                    if current_player.field[index_attacker as usize].health > 1 {
+
+                        println!("moving card to graveyard");
+                        current_player.graveyard.push(current_player.field.remove(index_attacker as usize));
+
+                    }
+                    if other_player.field[index_target as usize].health >1 {
+                        println!("moving card to graveyard");
+                        other_player.graveyard.push(current_player.field.remove(index_target as usize));
+                    }
+
+                }
             }
             else if split[0] == "look" {
                 current_player.print();
