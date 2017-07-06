@@ -40,7 +40,7 @@ impl Card {
 
 
     pub fn pretty_print(&self) {
-        println!("name:{}\t|class:{}\t|health:{}\t|attack:{}\t|level:{}\t|exp:{}\t|cost:{}\t|dura:{}",
+        println!("name:{}\t|class:{}\t|health:{}\t|attack:{}\t|level:{}\t|exp:{}\t|cost:{}\t|fatigued:{}\t|dura:{}",
                  &self.name,
                  &self.card_class,
                  &self.health,
@@ -48,6 +48,7 @@ impl Card {
                  &self.level,
                  &self.exp,
                  &self.cost,
+                 &self.fatigued,
                  &self.durability);
 
         for i in &self.abilities {

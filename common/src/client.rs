@@ -49,14 +49,15 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
         //First the player draws a card
         draw_card(current_player);
 
+        //Turn starts,
+        //unfatigue all cards
+        for i in &mut current_player.field {
+            i.fatigued = false;
+        }
 
         let mut doing_things: bool = true;
         while doing_things {
-            //Turn starts,
-            //unfatigue all cards
-            for i in current_player.field {
-                i.fatigued = false;
-            }
+
             //Asks what the player wants to do
             //The options are "play", "attack", "look", and "help"
             let mut line = String::new();
@@ -143,11 +144,14 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
                             }
                         }
                     }
+                    else {
+                        println!("Cant attack, Fatigued");
+                    }
                 }
             }
             else if split[0] == "look" {
                 current_player.print();
-                other_player.print();
+                println!("\n");
             }
             else if split[0] == "end" {
                 doing_things = false;
