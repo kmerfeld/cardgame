@@ -52,6 +52,11 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
 
         let mut doing_things: bool = true;
         while doing_things {
+            //Turn starts,
+            //unfatigue all cards
+            for i in current_player.field {
+                i.fatigued = false;
+            }
             //Asks what the player wants to do
             //The options are "play", "attack", "look", and "help"
             let mut line = String::new();
@@ -83,48 +88,67 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
                 }
             }
             else if split[0] == "attack" {
-
                 //This should all be moved to the board section
+                //Make sure enough arguments were supplied
                 if split.len() < 3 {
                     println!("not enough arguments, try \"attack your_monster enemy\" to attack opponent, use 999");
                 }
                 else {
-
+                    //This is here because there is always an attacker, 
+                    //Sometimes the target is the player
                     let index_attacker: i32 = split[1].parse().unwrap();
-                    let index_target: i32 = split[2].parse().unwrap();
 
-                    if current_player.field.len() < index_attacker as usize {
-                        println!("invalid attacker choice, max is {}", current_player.field.len());
+                    //make sure the attacker isnt fatigued
+                    if !current_player.field[index_attacker as usize].fatigued {
+
+                        //Check if attacking the players
+                        if split[2].contains("player"){
+                            current_player.field[index_attacker as usize].fatigued = true;
+                            other_player.health -= current_player.field[index_attacker as usize].attack;
+                            println!("doing {} dmg to {}, They now have {}", current_player.field[index_attacker as usize].attack, other_player.name, other_player.health);
+                            if other_player.health < 1 {
+                                println!("Game is over");
+                                doing_things = false;
+                                game_is_going = false;
+                            }
+                        }
+                        else {
+                            let index_target: i32 = split[2].parse().unwrap();
+
+                            if current_player.field.len() < index_attacker as usize {
+                                println!("invalid attacker choice, max is {}", current_player.field.len());
+                            }
+                            else if other_player.field.len() < index_attacker as usize {
+                                println!("invalid target choice, max is {}", other_player.field.len());
+                            }
+                            let attacker: i32 = split[1].parse().unwrap();
+                            let target: i32 = split[2].parse().unwrap();
+
+                            current_player.field[index_attacker as usize].fatigued = true;
+
+                            other_player.health -= current_player.field[index_attacker as usize].attack;
+                            //remove health
+                            current_player.field[index_attacker as usize].health -= other_player.field[index_target as usize].attack;
+                            other_player.field[index_target as usize].health -= current_player.field[index_attacker as usize].attack;
+                            //move dead monsters to the graveyard
+                            if current_player.field[index_attacker as usize].health > 1 {
+
+                                println!("moving card to graveyard");
+                                current_player.graveyard.push(current_player.field.remove(index_attacker as usize));
+
+                            }
+                            if other_player.field[index_target as usize].health >1 {
+                                println!("moving card to graveyard");
+                                other_player.graveyard.push(current_player.field.remove(index_target as usize));
+                            }
+                        }
                     }
-                    else if other_player.field.len() < index_attacker as usize {
-                        println!("invalid target choice, max is {}", other_player.field.len());
-                    }
-                    let attacker: i32 = split[1].parse().unwrap();
-                    let target: i32 = split[2].parse().unwrap();
-
-                    //remove health
-                    current_player.field[index_attacker as usize].health -= other_player.field[index_target as usize].attack;
-                    other_player.field[index_target as usize].health -= current_player.field[index_attacker as usize].attack;
-
-
-                    //move dead monsters to the graveyard
-                    if current_player.field[index_attacker as usize].health > 1 {
-
-                        println!("moving card to graveyard");
-                        current_player.graveyard.push(current_player.field.remove(index_attacker as usize));
-
-                    }
-                    if other_player.field[index_target as usize].health >1 {
-                        println!("moving card to graveyard");
-                        other_player.graveyard.push(current_player.field.remove(index_target as usize));
-                    }
-
                 }
             }
             else if split[0] == "look" {
                 current_player.print();
+                other_player.print();
             }
-
             else if split[0] == "end" {
                 doing_things = false;
             }
@@ -136,9 +160,5 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
         if turn == false { turn = true; }
         else { turn = false; }
     }
-
-
-
-
 
 }

@@ -12,7 +12,7 @@ use std::fmt;
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Card {
     pub name: String,
-    pub abilities: Vec<String>,
+    pub abilities: Vec<Ability>,
     pub health: i32,
     pub attack: i32,
     pub level: i32,
@@ -20,6 +20,7 @@ pub struct Card {
     pub durability: i32,
     pub card_class: CardClass,
     pub cost:i32,
+    pub fatigued: bool,
 }
 
 impl fmt::Display for Card {
@@ -167,6 +168,7 @@ impl Deck {
                 durability: i.durability.to_owned(),
                 abilities: i.abilities.to_owned(),
                 cost: i.cost,
+                fatigued: true,
             };
             let j = serde_json::to_string(&c).unwrap();
             file.write_all(j.as_bytes()).unwrap();
@@ -198,22 +200,24 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
         let mut tmp_name = "Default".to_owned();
         let mut tmp_health = 0;
         let mut tmp_attack = 0;
-        let mut tmp_abilities: Vec<String>;
+        let mut tmp_abilities: Vec<Ability> = Vec::new();
         let mut tmp_card_class = z;
 
-        let class = rand::thread_rng().gen_range(1, 3);
+
+        let class = rand::thread_rng().gen_range(1, 4);
         //Spellcaster
         if class == 1 {
             tmp_name = "Level 1 Spellcaster".to_owned();
             tmp_health = rand::thread_rng().gen_range(1, 2);
             tmp_attack = rand::thread_rng().gen_range(0, 1);
             tmp_card_class = CardClass{ name: "Spellcaster".to_owned(), ability_list:abi.clone() };
+
         }
         //Attacker
         if class == 2 {
             tmp_name = "Level 1 Attacker".to_owned();
-            tmp_health = rand::thread_rng().gen_range(2, 6);
-            tmp_attack = rand::thread_rng().gen_range(1, 3);
+            tmp_health = rand::thread_rng().gen_range(1, 3);
+            tmp_attack = rand::thread_rng().gen_range(2, 6);
             tmp_card_class = CardClass{ name: "Attacker".to_owned(), ability_list:abi.clone() };
         }
         //Defender
@@ -222,18 +226,24 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
             tmp_health = rand::thread_rng().gen_range(2, 5);
             tmp_attack = rand::thread_rng().gen_range(1, 2);
             tmp_card_class = CardClass{ name: "Defender".to_owned(), ability_list:abi.clone() };
+            tmp_abilities.push(Ability{
+                name:"Block".to_owned(),
+                level_requirement:0,
+                target:"none".to_owned(),
+                effect:"enemy cant attack hero".to_owned()
+            });
         }
-
         let x = Card {
             name: tmp_name,
             health: tmp_health,
             attack: tmp_attack,
-            level: 1,
+            level: 0,
             exp: 0,
             durability: 10,
             card_class: tmp_card_class,
-            abilities: Vec::new(),
+            abilities: tmp_abilities,
             cost: 1,
+            fatigued: true,
         };
         card_vec.push(x);
     }
