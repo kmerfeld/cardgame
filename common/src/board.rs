@@ -20,6 +20,7 @@ pub struct Card {
     pub durability: i32,
     pub card_class: CardClass,
     pub cost:i32,
+    pub id:i32,
     pub fatigued: bool,
 }
 
@@ -40,7 +41,7 @@ impl Card {
 
 
     pub fn pretty_print(&self) {
-        println!("name:{}\t|class:{}\t|health:{}\t|attack:{}\t|level:{}\t|exp:{}\t|cost:{}\t|fatigued:{}\t|dura:{}",
+        println!("[name:{}] | [class:{}] | [health:{}] | [attack:{}] | [level:{}] | [exp:{}] | [cost:{}] | [fatigued:{}] | [id:{}] | [dura:{}]",
                  &self.name,
                  &self.card_class,
                  &self.health,
@@ -49,6 +50,7 @@ impl Card {
                  &self.exp,
                  &self.cost,
                  &self.fatigued,
+                 &self.id,
                  &self.durability);
 
         for i in &self.abilities {
@@ -93,27 +95,25 @@ pub struct Player {
     pub hand: Vec<Card>,
     pub graveyard: Vec<Card>,
     pub health: i32,
+    pub id: i32,
 
 }
 impl Player {
     pub fn print(&self) {
         println!("Player is: {}", &self.name);
-        println!("They have {} helth", &self.health);
+        println!("They have {} health", &self.health);
         println!("In the hand is the following:");
         for i in &self.hand {
             i.pretty_print();
         }
-        println!("on the  board is the following:");
+        println!("\nOn the  board is the following:");
         for i in &self.field {
             i.pretty_print();
         }
-        println!("In the graveyard is the following:");
+        println!("\nIn the graveyard is the following:");
         for i in &self.graveyard {
             i.pretty_print();
         }
-    }
-    pub fn play(&mut self, position_in_hand: i32) {
-        self.field.push(self.hand.remove(position_in_hand as usize));
     }
 }
 
@@ -122,7 +122,7 @@ pub fn create_player(name: String, deck: Deck) -> Player {
     let field = Vec::new();
     let graveyard = Vec::new();
     let health: i32 = 30;
-    let player = Player { name: name, health: health, deck: deck, hand: hand, field: field, graveyard: graveyard};
+    let player = Player { name: name, id: 0, health: health, deck: deck, hand: hand, field: field, graveyard: graveyard};
     return player;
 }
 
@@ -130,9 +130,10 @@ pub fn create_player(name: String, deck: Deck) -> Player {
 // These go "player" does "action" to "target".
 // The board then decides what happens
 pub struct Event {
-    caster: Player,
-    action: String, //This will be an action
-    target: Card,
+    caster: Player, //ex: "player1"
+    action: String, //ex: "Destroy"
+    target: i32,   //ex: "<target id>
+    text: String,   //ex: "Destroy target entity
 }
 
 
@@ -161,6 +162,7 @@ impl Deck {
         for i in &self.cards {
             let c: Card = Card {
                 name: i.name.to_owned(),
+                id: i.id.to_owned(),
                 card_class: i.card_class.clone(),
                 health: i.health.to_owned(),
                 attack: i.attack.to_owned(),
@@ -236,6 +238,7 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
         }
         let x = Card {
             name: tmp_name,
+            id: 0,
             health: tmp_health,
             attack: tmp_attack,
             level: 0,
@@ -281,15 +284,4 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
     deck.save_to_file();
 
     return deck;
-}
-
-/* interact with the board */
-//Allow something to draw a card
-pub fn draw_card<'a>(player: &'a mut Player) {
-    if player.deck.cards.len() < 1 {}
-    else {
-        let topcard: Card = player.deck.cards.pop().unwrap();
-        println!("{}", topcard);
-        player.hand.push(topcard);
-    }
 }

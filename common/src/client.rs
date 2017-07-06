@@ -5,15 +5,15 @@ use rand::Rng;
 use std::io::{self, BufRead};
 
 use board::*;
+use action::*;
 
 
 pub fn gameloop (mut player_1: Player, mut player_2: Player) {
-    //Current players turn
-    //let mut turn: Player = board.player_1.clone();
-
-
-
-    //if rand::thread().gen_range(1,2) == 2 { turn = &board.player_2;}
+ 
+    //Determine the id's 
+    player_1.id = 1;
+    player_2.id = 2;   
+    let mut max_id = 3;
 
     let mut game_is_going: bool = true;
     let mut turn:bool = true;
@@ -26,8 +26,8 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
     // draw cards for each player
     for i in 0..6 {
         println!("drawing_cards");
-        draw_card(&mut player_1);
-        draw_card(&mut player_2);
+        draw_card(&mut player_1, &mut max_id);
+        draw_card(&mut player_2, &mut max_id);
     }
 
     player_1.print();
@@ -47,7 +47,7 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
         println!("\n#### This player's turn {}", current_player.name);
         current_player.print();    
         //First the player draws a card
-        draw_card(current_player);
+        draw_card(current_player, &mut max_id);
 
         //Turn starts,
         //unfatigue all cards
@@ -72,21 +72,7 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
             }
 
             else if split[0] == "play" {
-                //make sure that they had a second argument
-                if split.len() < 2 {
-                    println!("not enough arguments, try \"play 1\"");
-                }
-                else {
-                    let index_of_card: i32 = split[1].parse().unwrap();
-                    if current_player.hand.len() < index_of_card as usize {
-                        println!("invalid card choice, max is {}", current_player.hand.len());
-                    }
-                    else {
-
-                        current_player.play(index_of_card);
-
-                    }
-                }
+                play(split, current_player, other_player);
             }
             else if split[0] == "attack" {
                 //This should all be moved to the board section

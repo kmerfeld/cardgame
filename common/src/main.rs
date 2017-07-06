@@ -5,6 +5,7 @@ extern crate serde_json;
 
 mod board;
 mod client;
+mod action;
 
 use clap::{Arg, App, SubCommand};
 use board::*;
