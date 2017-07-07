@@ -72,7 +72,8 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
             }
 
             else if split[0] == "play" {
-                play(split, current_player, other_player);
+                let id: i32 = split[1].parse().unwrap();
+                move_card(&id, &mut current_player.hand, &mut current_player.field);
             }
             else if split[0] == "attack" {
                 //This should all be moved to the board section

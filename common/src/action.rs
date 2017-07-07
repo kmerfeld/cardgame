@@ -12,36 +12,28 @@ pub fn draw_card<'a>(player: &'a mut Player, max_id: &'a mut i32) {
 }
 
 //Play a card from your hand to the field
-pub fn play<'a>(split: Vec<&str>, current_player: &'a mut Player, other_player: &'a mut Player) { 
-    //make sure that they had a second argument
-    if split.len() < 2 {
-        println!("not enough arguments, try \"play 1\"");
+
+//Move a card from the field to graveyard
+pub fn move_card<'a>(id: &'a i32, curr_loc: &'a mut Vec<Card>, destination: &'a mut Vec<Card>) { 
+    //find the index
+    let mut card: i32 = -1;
+    for i in 0..curr_loc.len() {
+        if curr_loc[i].id == id.clone() {
+            card = i as i32;
+            break;
+        }   
+    }
+    if card == -1{
+        println!("Card doesnt exist");
     }
     else {
-        let id: i32 = split[1].parse().unwrap();
-        
-        let mut card: i32 = -1;
-        //Check if you have the card with the index your are looking for
-        for i in 0..current_player.hand.len() {
-            if current_player.hand[i].id == id {
-                card = i as i32;
-                break;
-            }
-        }
-
-        //Check if you have the card
-        if card == -1 {
-            println!("Card doesnt exists");
-        }
-        //Play the card
-        else {
-            current_player.field.push(current_player.hand.remove(card as usize));
-        }
+        //actually move the card
+        destination.push(curr_loc.remove(card as usize));
 
         //Check for effects of card
-        for i in current_player.field.last.abilities {
-            //TODO:
-        }
-
+        //for i in current_player.field.last().unwrap().clone().abilities {
+        //    //TODO:
+        //}
     }
 }
+
