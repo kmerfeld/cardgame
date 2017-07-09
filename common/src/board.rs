@@ -24,6 +24,24 @@ pub struct Card {
     pub fatigued: bool,
 }
 
+impl Default for Card {
+    fn default()  -> Card{
+        return Card{
+            name: "Default".to_string(),
+            id: 0,
+            health: 0,
+            attack: 0,
+            level: 0,
+            exp: 0,
+            durability: 0,
+            card_class: CardClass::default(),
+            abilities: Vec::new(),
+            cost: 0,
+            fatigued: true,
+        };
+    }
+}
+
 impl fmt::Display for Card {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}, {}, {}", self.name, self.health, self.attack)
@@ -66,6 +84,7 @@ pub struct Ability {
     pub level_requirement: i32,
     pub target: String,
     pub effect: String,
+    pub trigger: String,
 }
 
 impl fmt::Display for Ability {
@@ -78,6 +97,11 @@ impl fmt::Display for Ability {
 pub struct CardClass {
     pub name: String,
     pub ability_list: Vec<Ability>,
+}
+impl Default for CardClass {
+    fn default() -> CardClass {
+        return CardClass{ name: "Default".to_string(), ability_list: Vec::new()};
+    }
 }
 
 impl fmt::Display for CardClass {
@@ -214,6 +238,14 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
             tmp_health = rand::thread_rng().gen_range(1, 2);
             tmp_attack = rand::thread_rng().gen_range(0, 1);
             tmp_card_class = CardClass{ name: "Spellcaster".to_owned(), ability_list:abi.clone() };
+            tmp_abilities.push(Ability{
+                name:"Death bolt".to_owned(),
+                level_requirement:0,
+                target:"target enemy creature".to_owned(),
+                trigger: "on_play".to_owned(),
+                effect:"destroy".to_owned()
+            });
+
 
         }
         //Attacker
@@ -233,6 +265,7 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
                 name:"Block".to_owned(),
                 level_requirement:0,
                 target:"none".to_owned(),
+                trigger: "on_player_attack".to_owned(),
                 effect:"enemy cant attack hero".to_owned()
             });
         }
