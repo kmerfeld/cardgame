@@ -51,7 +51,6 @@ pub fn attack_face<'a>(attacker: &'a mut i32, mut target: &'a mut Player, mut yo
     else {
         //trigger_abilities("on_player_attacked".to_owned(), &mut you.field[index as usize].clone(), &mut you, &mut target);
 
-        //target.health -= you.field[index].attack;
         target.health -= you.field[index as usize].attack;
     }
 }
@@ -126,8 +125,9 @@ pub fn trigger_single<'a>(trigger: String, id: &i32, caster: &'a mut Player, tar
     let mut card: Card = Card::default();
     let mut index_o = get_index(&id, &caster.field);
     let mut index_c = get_index(&id, &target_owner.field);
-    if index_o.is_some() { card = caster.field[index_o.unwrap() as usize].clone(); }
+    if index_o.is_some() { card = caster.field[index_o.unwrap() as usize].clone();  }
     if index_c.is_some() { card = target_owner.field[index_c.unwrap()as usize].clone(); }
+
 
     //Check abilities
     for ability in card.clone().abilities {
@@ -139,27 +139,30 @@ pub fn trigger_single<'a>(trigger: String, id: &i32, caster: &'a mut Player, tar
 
             let mut index = index_o.unwrap();
 
-            let effect = ability.effect;
+            let effect:Vec<&str> = ability.effect.split_whitespace().collect();
             //attack's only valid target is another monster
-            if effect.to_string() == "destroy" {
 
+            if effect[0].to_string() == "destroy" {
                 //Figure out what card will be destroyed
                 let t = ask("what monster do you want destroyed".to_owned());
-
 
                 //Check both fields
                 let mut index_c = get_index(&t.trim().parse::<i32>().unwrap(), &caster.field);
                 let mut index_t = get_index(&t.trim().parse::<i32>().unwrap(), &target_owner.field);
 
+
+                //if its your side
                 if index_c.is_some() { 
                     if ability.target == "target creature".to_owned() || ability.target == "ally creature".to_owned() {
-                        let thing: i32 = &t.trim().parse::<i32>().unwrap();
-                        move_card(&t.trim().parse::<i32>().unwrap(), &mut caster.field).unwrap(), &mut caster.field, &mut caster.graveyard);
+                        let thing: i32 = t.trim().parse::<i32>().unwrap();
+                        move_card(&t.trim().parse::<i32>().unwrap(), &mut caster.field, &mut caster.graveyard);
                         //trigger_single("on_death".to_owned(), &id, &'a );
                     }
                 }
+
+                //If its on the opponents side
                 else if index_t.is_some() { 
-                    let thing: i32 = &t.trim().parse::<i32>().unwrap();
+                    let thing: i32 = t.trim().parse::<i32>().unwrap();
                     if ability.target == "target enemy creature".to_owned() {
                         move_card(&t.trim().parse::<i32>().unwrap(), &mut target_owner.field, &mut target_owner.graveyard);
                         //trigger_single("on_death".to_owned());
@@ -170,43 +173,123 @@ pub fn trigger_single<'a>(trigger: String, id: &i32, caster: &'a mut Player, tar
                     break;
                 }
             }
+            //Modify ability
+            else if effect[0].to_string() == "modify" {
+                //effect[1] is the stat we are looking to change,
+                //effect[2] is by how much we will change it
+                if ability.target == "self" {
+                    if index_o.is_some() {
+                        modify_stat(&id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut caster.field);
+                    }
+                }
+                else if ability.target == "target_creature" {
+                    let tmp_id: String = ask("What id do you want to target".to_owned());
+                    let target_id = tmp_id.parse::<i32>();
 
-        }
-    }
-}
+                    if target_id.is_ok() {
+                        let is_ally = get_index(&target_id.clone().unwrap(), &caster.field);
+                        if is_ally.is_some() {
+                            modify_stat(&id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut caster.field);
+                        }
+                        else {
+                            let is_ally = get_index(&target_id.unwrap(), &caster.field);
+                            if is_ally.is_some() {
+                                modify_stat(&id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut target_owner.field);
+                            }
+                        }
+                    }
+                }
+                else if ability.target == "target_ally_creature" {
+                    let tmp_id: String = ask("What id do you want to target".to_owned());
+                    let target_id = tmp_id.parse::<i32>();
 
-//Checks all creatures on a field
-pub fn trigger_player<'a>(trigger: String, you: &'a mut Player, opponent: &'a mut Player) {}
-//This will have the following triggers,
-//on player_attacked
-//on turn_start
-//on turn_end
+                    if target_id.is_ok() {
+                        let is_ally = get_index(&target_id.clone().unwrap(), &caster.field);
+                        if is_ally.is_some() {
+                            modify_stat(&id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut caster.field);
+                        }
+                    }
+                }
+                else if ability.target == "target_enemy_creature" {
+                    let tmp_id: String = ask("What id do you want to target".to_owned());
+                    let target_id = tmp_id.parse::<i32>();
 
+                    if target_id.is_ok() {
+                        let is_ally = get_index(&target_id.unwrap(), &caster.field);
+                        if is_ally.is_some() {
+                            modify_stat(&id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut target_owner.field);
+                        }
+                    }
+                }
+                else if ability.target == "both_fields" {
+                    for i  in 0..caster.field.len() {
+                        modify_stat(&&caster.field[i].id.clone(), effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut caster.field);
+                    }
+                    for i in 0..target_owner.field.len() {
+                        modify_stat(&&target_owner.field[i].id.clone(), effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut target_owner.field);
+                    }
+                }
+                else if ability.target == "enemy_field" {
+                    for i in 0..target_owner.field.len() {
+                        modify_stat(&&target_owner.field[i].id.clone(), effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut target_owner.field);
+                    }
 
-
-pub fn untill_turn_start<'a>(mut player: &'a mut Player) {
-
-    player.field[0].abilities.remove(0);
-
-    for i in &mut player.field {
-        for j in 0..i.abilities.len() {
-            if i.abilities[j].trigger == "untill_turn_start".to_owned() {
-                i.abilities.remove(j);
+                }
+                else if ability.target == "ally_field" {
+                    for i in 0..caster.field.len() {
+                        modify_stat(&&caster.field[i].id.clone(), effect[1].to_owned(), effect[2].parse::<i32>().unwrap(), &mut caster.field);
+                    }
+                }
             }
         }
     }
 }
-pub fn untill_turn_end<'a>(mut player: &'a mut Player) {
 
-    player.field[0].abilities.remove(0);
+pub fn modify_stat<'a>(id: &'a &i32, stat: String, amount: i32, location: &'a mut Vec<Card>) {
+    let index = get_index(id, location);
+    if index.is_some() {
+        if stat == "health" { location[index.unwrap() as usize].health += amount; }
+        else if stat == "attack" { location[index.unwrap() as usize].attack += amount; }
+            else if stat == "durability" { location[index.unwrap() as usize].durability += amount; }
+        }
+        else {
+            println!("Could not find creature");
+        }
+    }
 
-    for i in &mut player.field {
-        for j in 0..i.abilities.len() {
-            if i.abilities[j].trigger == "untill_turn_end".to_owned() {
-                i.abilities.remove(j);
+
+    //Checks all creatures on a field
+    pub fn trigger_player<'a>(trigger: String, you: &'a mut Player, opponent: &'a mut Player) {}
+    //This will have the following triggers,
+    //on player_attacked
+    //on turn_start
+    //on turn_end
+
+
+
+    pub fn untill_turn_start<'a>(mut player: &'a mut Player) {
+
+        player.field[0].abilities.remove(0);
+
+        for i in &mut player.field {
+            for j in 0..i.abilities.len() {
+                if i.abilities[j].trigger == "untill_turn_start".to_owned() {
+                    i.abilities.remove(j);
+                }
             }
         }
     }
-}
+    pub fn untill_turn_end<'a>(mut player: &'a mut Player) {
+
+        player.field[0].abilities.remove(0);
+
+        for i in &mut player.field {
+            for j in 0..i.abilities.len() {
+                if i.abilities[j].trigger == "untill_turn_end".to_owned() {
+                    i.abilities.remove(j);
+                }
+            }
+        }
+    }
 
 

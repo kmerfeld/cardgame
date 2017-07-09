@@ -59,16 +59,16 @@ impl Card {
 
 
     pub fn pretty_print(&self) {
-        println!("[name:{}] | [class:{}] | [health:{}] | [attack:{}] | [level:{}] | [exp:{}] | [cost:{}] | [fatigued:{}] | [id:{}] | [dura:{}]",
+        println!("[name:{}] | [class:{}] | [id:{}] | [health:{}] | [attack:{}] | [level:{}] | [exp:{}] | [cost:{}] | [fatigued:{}] | [dura:{}]",
                  &self.name,
                  &self.card_class,
+                 &self.id,
                  &self.health,
                  &self.attack,
                  &self.level,
                  &self.exp,
                  &self.cost,
                  &self.fatigued,
-                 &self.id,
                  &self.durability);
 
         for i in &self.abilities {
@@ -254,6 +254,15 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
             tmp_health = rand::thread_rng().gen_range(1, 3);
             tmp_attack = rand::thread_rng().gen_range(2, 6);
             tmp_card_class = CardClass{ name: "Attacker".to_owned(), ability_list:abi.clone() };
+            tmp_abilities.push(Ability{
+                name:"rag party".to_owned(),
+                level_requirement:0,
+                target:"both_fields".to_owned(),
+                trigger: "on_play".to_owned(),
+                effect:"modify attack 5".to_owned()
+            });
+
+
         }
         //Defender
         if class == 3 {
