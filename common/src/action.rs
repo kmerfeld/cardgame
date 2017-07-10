@@ -313,14 +313,10 @@ mod tests {
     #[test]
     fn test_ability_modify(){
         let a: AbilityRaw = AbilityRaw{
-            name: "buff 5 attack".to_owned(),
-            level_requirement: 0,
             target: "enemy_field".to_owned(),
             trigger: "on_play".to_owned(),
             effect: "modify attack 5".to_owned()};
         let b: AbilityRaw = AbilityRaw{
-            name: "buff 5 health".to_owned(),
-            level_requirement: 0,
             target: "enemy_field".to_owned(),
             trigger: "on_play".to_owned(),
             effect: "modify health 5".to_owned()};
