@@ -12,7 +12,7 @@ use std::fmt;
 
 
 /* The Card section */
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Card {
     pub name: String,
     pub abilities: Vec<Ability>,
@@ -86,7 +86,7 @@ impl Card {
 
 
 
-#[derive(Clone,Serialize, Deserialize)]
+#[derive(Debug, Clone,Serialize, Deserialize)]
 pub struct AbilityRaw {
     pub name: String,
     pub level_requirement: i32,
@@ -113,7 +113,7 @@ impl fmt::Display for AbilityRaw {
     }
 }
 
-#[derive(Clone,Serialize, Deserialize)]
+#[derive(Debug, Clone,Serialize, Deserialize)]
 pub struct Ability {
     pub all_pick : String,
     pub ability_raws: Vec<AbilityRaw>,
@@ -125,7 +125,7 @@ impl Default for Ability {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CardClass {
     pub name: String,
     pub ability_list: Vec<Ability>,
@@ -143,7 +143,7 @@ impl fmt::Display for CardClass {
 }
 
 /*  The player section */
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Player {
     pub name: String,
     pub deck: Deck,
@@ -193,11 +193,12 @@ pub struct Event {
 }
 
 
-/* Start deck section */
-#[derive(Clone, Serialize, Deserialize)]
+/* The deck section */
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Deck {
-    pub cards: Vec<Card>,
     pub name_of_deck: String,
+    pub cards: Vec<Card>,
+
 }
 
 impl Deck {
@@ -215,24 +216,19 @@ impl Deck {
     }
     pub fn save_to_file(&self) {
         let mut file = File::create(&self.name_of_deck).unwrap();
-        for i in &self.cards {
-            let c: Card = Card {
-                name: i.name.to_owned(),
-                id: i.id.to_owned(),
-                card_class: i.card_class.clone(),
-                health: i.health.to_owned(),
-                attack: i.attack.to_owned(),
-                level:i.level.to_owned(),
-                exp: i.exp.to_owned(),
-                durability: i.durability.to_owned(),
-                abilities: i.abilities.to_owned(),
-                cost: i.cost,
-                fatigued: true,
-            };
-            let j = serde_json::to_string(&c).unwrap();
-            file.write_all(j.as_bytes()).unwrap();
-        }
+        let j = serde_json::to_string(&self).unwrap();
+        file.write_all(j.as_bytes()).unwrap();
     }
+    pub fn read_deck_from_file<P: AsRef<Path>>(path: P) -> Result<Deck, Box<Error>> {
+        // Open the file in read-only mode.
+        let file = File::open(path)?;
+
+        let u: Deck = serde_json::from_reader(file)?;
+
+        // Return the `User`.
+        Ok(u)
+    }
+
 }
 
 
