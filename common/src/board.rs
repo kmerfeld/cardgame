@@ -75,28 +75,53 @@ impl Card {
                  &self.durability);
 
         for i in &self.abilities {
-            println!("{}", i);
+            println!("{}", i.all_pick);
+            for j in &i.ability_raws {
+                println!("{}", j);
 
+            }
         }
     }
 }
 
-pub struct AbilityList {
-    abilities: Vec<Ability>
-}
+
 
 #[derive(Clone,Serialize, Deserialize)]
-pub struct Ability {
+pub struct AbilityRaw {
     pub name: String,
     pub level_requirement: i32,
     pub target: String,
     pub effect: String,
     pub trigger: String,
 }
+impl Default for AbilityRaw{
+    fn default() -> AbilityRaw {
+        return AbilityRaw{
+            name: "Default".to_owned(),
+            level_requirement: 0,
+            target: "".to_owned(),
+            effect: "".to_owned(),
+            trigger: "".to_owned(),
+        };
+    }
+}
 
-impl fmt::Display for Ability {
+
+impl fmt::Display for AbilityRaw {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({}, {}, {}, {})", self.name, self.level_requirement, self.target, self.effect)
+    }
+}
+
+#[derive(Clone,Serialize, Deserialize)]
+pub struct Ability {
+    pub all_pick : String,
+    pub ability_raws: Vec<AbilityRaw>,
+}
+impl Default for Ability {
+    fn default() -> Ability {
+        return Ability{ all_pick: "all".to_owned(), ability_raws: Vec::new()};
+
     }
 }
 
@@ -251,13 +276,16 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
             tmp_health = rand::thread_rng().gen_range(1, 2);
             tmp_attack = rand::thread_rng().gen_range(0, 1);
             tmp_card_class = CardClass{ name: "Spellcaster".to_owned(), ability_list:abi.clone() };
-            tmp_abilities.push(Ability{
+
+            let mut a: Ability = Ability::default();
+            a.ability_raws.push(AbilityRaw{
                 name:"Death bolt".to_owned(),
                 level_requirement:0,
                 target:"target enemy creature".to_owned(),
                 trigger: "on_play".to_owned(),
                 effect:"destroy".to_owned()
             });
+            tmp_abilities.push(a);
 
 
         }
@@ -267,13 +295,16 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
             tmp_health = rand::thread_rng().gen_range(1, 3);
             tmp_attack = rand::thread_rng().gen_range(2, 6);
             tmp_card_class = CardClass{ name: "Attacker".to_owned(), ability_list:abi.clone() };
-            tmp_abilities.push(Ability{
+
+            let mut a: Ability = Ability::default();
+            a.ability_raws.push(AbilityRaw{
                 name:"rag party".to_owned(),
                 level_requirement:0,
                 target:"both_fields".to_owned(),
                 trigger: "on_play".to_owned(),
                 effect:"modify attack 5".to_owned()
             });
+            tmp_abilities.push(a);
 
 
         }
@@ -283,13 +314,16 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
             tmp_health = rand::thread_rng().gen_range(2, 5);
             tmp_attack = rand::thread_rng().gen_range(1, 2);
             tmp_card_class = CardClass{ name: "Defender".to_owned(), ability_list:abi.clone() };
-            tmp_abilities.push(Ability{
+            let mut a: Ability = Ability::default();
+            a.ability_raws.push(AbilityRaw{
                 name:"Block".to_owned(),
                 level_requirement:0,
                 target:"none".to_owned(),
                 trigger: "on_player_attack".to_owned(),
                 effect:"enemy cant attack hero".to_owned()
             });
+            tmp_abilities.push(a);
+
         }
         let x = Card {
             name: tmp_name,
