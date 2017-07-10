@@ -2,6 +2,9 @@ extern crate serde;
 extern crate serde_json;
 extern crate rand;
 
+use std::error::Error;
+use std::path::Path;
+
 use rand::Rng;
 use std::fs::File;
 use std::io::prelude::*;
@@ -76,6 +79,10 @@ impl Card {
 
         }
     }
+}
+
+pub struct AbilityList {
+    abilities: Vec<Ability>
 }
 
 #[derive(Clone,Serialize, Deserialize)]
@@ -203,20 +210,25 @@ impl Deck {
     }
 }
 
-//TODO: this needs to be fixed
-/*
-   pub fn read_deck_from_file<P: AsRef<Path>>(path: P) -> Result<Deck, Box<Error>> {
-   let file = File::open(path)?;
-   let u = serde_json::from_reader(file)?;
-   Ok(u)
-   }
-   */
 
+fn read_json_from_file<P: AsRef<Path>>(path: P) -> Result<String, Box<Error>> {
+    // Open the file in read-only mode.
+    let file = File::open(path)?;
+
+    let u = serde_json::from_reader(file)?;
+
+    // Return the `User`.
+    Ok(u)
+}
+
+//TODO: investigate this with 0 cards and 0 exp
 pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> Deck{
     //Generate up some cards
     let mut card_vec = Vec::new();
 
-
+    //let json_data = read_json_from_file("abilities").unwrap();
+    //let a = serde_json::from_str(&json_data).unwrap();
+    //let spell = a[Spellcaster];
     //read in classes
     for _ in 0..num_cards {
 
@@ -234,6 +246,7 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
         let class = rand::thread_rng().gen_range(1, 4);
         //Spellcaster
         if class == 1 {
+            //Get an ability
             tmp_name = "Level 1 Spellcaster".to_owned();
             tmp_health = rand::thread_rng().gen_range(1, 2);
             tmp_attack = rand::thread_rng().gen_range(0, 1);

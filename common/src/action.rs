@@ -133,6 +133,7 @@ pub fn trigger_single<'a>(trigger: String, id: &i32, caster: &'a mut Player, tar
     for ability in card.clone().abilities {
         //If its the correct trigger type
         if ability.trigger == trigger {
+            println!("activating {}", ability.name);
             //We know that the card is valid, and we have its index.
             //Things can only ever use thier effects when they are on the feild,
             //so we dont need to try and figure out where that is
@@ -302,5 +303,37 @@ mod tests {
         move_card(&card.id, &mut hand, &mut field);
         assert!(field.last().unwrap().name == "Test_card");
     }
-}
 
+    #[test]
+    fn test_ability_modify(){
+        let buff: Ability = Ability{
+            name: "buff 5 attack".to_owned(),
+            level_requirement: 0,
+            target: "enemy_field".to_owned(),
+            trigger: "on_play".to_owned(),
+            effect: "modify attack 5".to_owned()};
+
+           let mut card: Card = Card{name: "Test_card".to_owned(), id: 1,  ..Card::default()};
+
+           let card1 = Card{ attack: 0, id: 2, ..Card::default()};
+           let mut card2: Card = card1.clone();
+           card2.id = 3;
+
+           card.abilities.push(buff);
+
+
+           let mut d: Deck = Deck{cards: Vec::new(), name_of_deck: "deck".to_owned()};
+           let mut p1: Player = create_player("p1".to_owned(), d.clone());
+           let mut p2: Player = create_player("p2".to_owned(), d.clone());
+
+           p1.field.push(card.clone());
+           p2.field.push(card1);
+           p2.field.push(card2);
+
+           trigger_single("on_play".to_owned(), &card.id, &mut p1, &mut p2 );
+           assert!(p2.field[0].attack == 5);
+           assert!(p2.field[1].attack == 5);
+
+
+    }
+}
