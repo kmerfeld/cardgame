@@ -254,15 +254,12 @@ pub fn modify_stat<'a>(id: &'a &i32, stat: String, amount: i32, location: &'a mu
     }
 }
 
-
 //Checks all creatures on a field
 pub fn trigger_player<'a>(trigger: String, you: &'a mut Player, opponent: &'a mut Player) {}
 //This will have the following triggers,
 //on player_attacked
 //on turn_start
 //on turn_end
-
-
 
 pub fn untill_turn_start<'a>(mut player: &'a mut Player) {
 
@@ -288,6 +285,7 @@ pub fn untill_turn_end<'a>(mut player: &'a mut Player) {
         }
     }
 }
+
 
 #[cfg(test)]
 mod tests {
