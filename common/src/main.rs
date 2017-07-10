@@ -70,8 +70,8 @@ fn main() {
         ("client", Some(client_matches)) => {
     
             //make 2 players with decks
-            let mut p1_deck = Deck::read_deck_from_file("p1.deck".to_owned());
-            let p2_deck = create_deck(10, 2000, "p2.deck".to_owned());
+            let mut p1_deck = Deck::read_deck_from_file("p1.deck.json".to_owned());
+            let p2_deck = create_deck(10, 2000, "p2.deck.json".to_owned());
 
             //let mut p1_deck = p2_deck.clone();
             if p1_deck.is_ok() { 

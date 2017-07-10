@@ -9,6 +9,8 @@ use action::*;
 
 
 pub fn gameloop (mut player_1: Player, mut player_2: Player) {
+
+    println!("Starting game");
  
     //Determine the id's 
     player_1.id = 1;

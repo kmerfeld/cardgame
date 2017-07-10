@@ -28,6 +28,7 @@ pub struct Card {
 }
 
 impl Default for Card {
+
     fn default()  -> Card{
         return Card{
             name: "Default".to_string(),
@@ -125,14 +126,26 @@ impl Default for Ability {
     }
 }
 
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CardClass {
     pub name: String,
     pub ability_list: Vec<Ability>,
+    pub init_health: i32,
+    pub init_attack: i32,
+    pub lvl_up_health: i32,
+    pub lvl_up_attack: i32,
 }
 impl Default for CardClass {
     fn default() -> CardClass {
-        return CardClass{ name: "Default".to_string(), ability_list: Vec::new()};
+        return CardClass{ 
+            name: "Default".to_string(),
+            ability_list: Vec::new(),
+            init_health: 0,
+            init_attack: 0,
+            lvl_up_health: 0,
+            lvl_up_attack:0,
+        };
     }
 }
 
@@ -201,6 +214,15 @@ pub struct Deck {
 
 }
 
+impl Default for Deck {
+    fn default()  -> Deck{
+        return Deck{
+            name_of_deck: "default".to_owned(),
+            cards: Vec::new()};
+    }
+}
+
+
 impl Deck {
     pub fn new(&self, deck_name: String) -> Deck{
         let deck = Deck { cards: Vec::new(), name_of_deck: deck_name};
@@ -231,11 +253,11 @@ impl Deck {
 
 }
 
-
-fn read_json_from_file<P: AsRef<Path>>(path: P) -> Result<String, Box<Error>> {
+fn read_card_class<P: AsRef<Path>>(path: P) -> Result<Vec<CardClass>, Box<Error>> {
     // Open the file in read-only mode.
     let file = File::open(path)?;
 
+    // Read the JSON contents of the file as an instance of `User`.
     let u = serde_json::from_reader(file)?;
 
     // Return the `User`.
@@ -245,98 +267,65 @@ fn read_json_from_file<P: AsRef<Path>>(path: P) -> Result<String, Box<Error>> {
 //TODO: investigate this with 0 cards and 0 exp
 pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> Deck{
     //Generate up some cards
-    let mut card_vec = Vec::new();
+    let mut card_vec: Vec<Card> = Vec::new();
 
-    //let json_data = read_json_from_file("abilities").unwrap();
-    //let a = serde_json::from_str(&json_data).unwrap();
-    //let spell = a[Spellcaster];
-    //read in classes
+    /*
+    let file = File::open("abilities");
+    if !file.is_ok(){ 
+        println!("Cant find abilities file, giving you a blank deck");
+        return Deck::default();
+    }
+    println!("going to try and open the classes");
+    let classes = read_card_class("abilities").unwrap();
+    */
+
+    let data = r#"[{"name":"Default","ability_list":[{"all_pick":"all","ability_raws":[{"name":"Block","level_requirement":0,"target":"none","effect":"enemy cant attack hero","trigger":"on_player_attack"}]}],"init_health":0,"init_attack":0,"lvl_up_health":0,"lvl_up_attack":0},
+{"name":"Default","ability_list":[{"all_pick":"all","ability_raws":[{"name":"Block","level_requirement":0,"target":"none","effect":"enemy cant attack hero","trigger":"on_player_attack"}]}],"init_health":0,"init_attack":0,"lvl_up_health":0,"lvl_up_attack":0},
+{"name":"Default","ability_list":[{"all_pick":"all","ability_raws":[{"name":"Block","level_requirement":0,"target":"none","effect":"enemy cant attack hero","trigger":"on_player_attack"}]}],"init_health":0,"init_attack":0,"lvl_up_health":0,"lvl_up_attack":0}
+]"#;
+
+    // read in the file
+    let input: Result<Vec<CardClass>, serde_json::Error> = serde_json::from_str(data);
+
+    //Check that it seems good
+    if input.is_ok() {
+        println!("input is good");
+    }
+    else {
+        println!("Could not interpret file");
+        return Deck::default();
+    }
+    let classes: Vec<CardClass> = input.unwrap();
+    //let classes = &input.unwrap();
     for _ in 0..num_cards {
 
-        let abi = Vec::new();
-        let z = CardClass{ name:"test".to_owned(), ability_list:abi.clone() };
 
+        //Pick which class we will use
+        let class = rand::thread_rng().gen_range(0, classes.len());
 
-        let mut tmp_name = "Default".to_owned();
-        let mut tmp_health = 0;
-        let mut tmp_attack = 0;
-        let mut tmp_abilities: Vec<Ability> = Vec::new();
-        let mut tmp_card_class = z;
+        // pick an ability
+        // TODO: think of a good way to implement level_requirement
+        let ability = rand::thread_rng().gen_range(0, classes[class].ability_list.len());
+        let mut abili_vec: Vec<Ability> = Vec::new();
+        abili_vec.push(classes[class].ability_list[ability].clone());
 
-
-        let class = rand::thread_rng().gen_range(1, 4);
-        //Spellcaster
-        if class == 1 {
-            //Get an ability
-            tmp_name = "Level 1 Spellcaster".to_owned();
-            tmp_health = rand::thread_rng().gen_range(1, 2);
-            tmp_attack = rand::thread_rng().gen_range(0, 1);
-            tmp_card_class = CardClass{ name: "Spellcaster".to_owned(), ability_list:abi.clone() };
-
-            let mut a: Ability = Ability::default();
-            a.ability_raws.push(AbilityRaw{
-                name:"Death bolt".to_owned(),
-                level_requirement:0,
-                target:"target enemy creature".to_owned(),
-                trigger: "on_play".to_owned(),
-                effect:"destroy".to_owned()
-            });
-            tmp_abilities.push(a);
-
-
-        }
-        //Attacker
-        if class == 2 {
-            tmp_name = "Level 1 Attacker".to_owned();
-            tmp_health = rand::thread_rng().gen_range(1, 3);
-            tmp_attack = rand::thread_rng().gen_range(2, 6);
-            tmp_card_class = CardClass{ name: "Attacker".to_owned(), ability_list:abi.clone() };
-
-            let mut a: Ability = Ability::default();
-            a.ability_raws.push(AbilityRaw{
-                name:"rag party".to_owned(),
-                level_requirement:0,
-                target:"both_fields".to_owned(),
-                trigger: "on_play".to_owned(),
-                effect:"modify attack 5".to_owned()
-            });
-            tmp_abilities.push(a);
-
-
-        }
-        //Defender
-        if class == 3 {
-            tmp_name = "Level 1 Defender".to_owned();
-            tmp_health = rand::thread_rng().gen_range(2, 5);
-            tmp_attack = rand::thread_rng().gen_range(1, 2);
-            tmp_card_class = CardClass{ name: "Defender".to_owned(), ability_list:abi.clone() };
-            let mut a: Ability = Ability::default();
-            a.ability_raws.push(AbilityRaw{
-                name:"Block".to_owned(),
-                level_requirement:0,
-                target:"none".to_owned(),
-                trigger: "on_player_attack".to_owned(),
-                effect:"enemy cant attack hero".to_owned()
-            });
-            tmp_abilities.push(a);
-
-        }
+        //Create the card then shove it into a deck
         let x = Card {
-            name: tmp_name,
+            name: format!("Level 1 {}", classes[class].name),
             id: 0,
-            health: tmp_health,
-            attack: tmp_attack,
-            level: 0,
+            health: classes[class].init_health,
+            attack: classes[class].init_attack,
+            level: 1,
             exp: 0,
             durability: 10,
-            card_class: tmp_card_class,
-            abilities: tmp_abilities,
+            card_class: classes[class].clone(),
+            abilities: abili_vec,
             cost: 1,
             fatigued: true,
         };
         card_vec.push(x);
-    }
 
+    }
     let mut deck = Deck { cards: card_vec, name_of_deck: deck_name};
 
     // Grant cards a few levels 
