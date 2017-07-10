@@ -1,0 +1,30 @@
+[
+    {
+        "name": "SpellCaster",
+        "ability_list": [
+            {
+                "all_pick": "all",
+                "name": "Blood sacrifice",
+                "level_requirement": 0,
+                "ability_raws": [
+                    {
+                        "target": "ally_creature",
+                        "effect": "destroy",
+                        "trigger": "on_play"
+                    },
+                    { 
+                        "target": "self",
+                        "effect": "modify attack 5",
+                        "trigger": "on_play"
+
+                    }
+
+                ]
+            }
+        ],
+        "init_health": 1,
+        "init_attack": 0,
+        "lvl_up_health": 0,
+        "lvl_up_attack": 0
+    }
+]

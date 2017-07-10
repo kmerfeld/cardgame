@@ -89,8 +89,7 @@ impl Card {
 
 #[derive(Debug, Clone,Serialize, Deserialize)]
 pub struct AbilityRaw {
-    pub name: String,
-    pub level_requirement: i32,
+
     pub target: String,
     pub effect: String,
     pub trigger: String,
@@ -98,8 +97,6 @@ pub struct AbilityRaw {
 impl Default for AbilityRaw{
     fn default() -> AbilityRaw {
         return AbilityRaw{
-            name: "Default".to_owned(),
-            level_requirement: 0,
             target: "".to_owned(),
             effect: "".to_owned(),
             trigger: "".to_owned(),
@@ -110,18 +107,20 @@ impl Default for AbilityRaw{
 
 impl fmt::Display for AbilityRaw {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "({}, {}, {}, {})", self.name, self.level_requirement, self.target, self.effect)
+        write!(f, "({}, {}, {})", self.trigger, self.target, self.effect)
     }
 }
 
 #[derive(Debug, Clone,Serialize, Deserialize)]
 pub struct Ability {
+    pub name: String,
+    pub level_requirement: i32,
     pub all_pick : String,
     pub ability_raws: Vec<AbilityRaw>,
 }
 impl Default for Ability {
     fn default() -> Ability {
-        return Ability{ all_pick: "all".to_owned(), ability_raws: Vec::new()};
+        return Ability{ name: "ability_1".to_string(), level_requirement: 0, all_pick: "all".to_owned(), ability_raws: Vec::new()};
 
     }
 }
@@ -166,6 +165,11 @@ pub struct Player {
     pub health: i32,
     pub id: i32,
 
+}
+impl Default for Player {
+    fn default() -> Player {
+        return Player{ name: "default".to_owned(), deck: Deck::default(), field: Vec::new(), hand: Vec::new(), graveyard: Vec::new(), health: 0, id: 0 };    
+    }
 }
 impl Player {
     pub fn print(&self) {
@@ -241,26 +245,19 @@ impl Deck {
         let j = serde_json::to_string(&self).unwrap();
         file.write_all(j.as_bytes()).unwrap();
     }
-    pub fn read_deck_from_file<P: AsRef<Path>>(path: P) -> Result<Deck, Box<Error>> {
-        // Open the file in read-only mode.
+}
+
+//TODO: use generic to fuse these two functions
+pub fn read_deck_from_file<P: AsRef<Path>>(path: P) -> Result<Deck, Box<Error>> {
         let file = File::open(path)?;
-
         let u: Deck = serde_json::from_reader(file)?;
-
-        // Return the `User`.
         Ok(u)
     }
 
-}
 
 fn read_card_class<P: AsRef<Path>>(path: P) -> Result<Vec<CardClass>, Box<Error>> {
-    // Open the file in read-only mode.
     let file = File::open(path)?;
-
-    // Read the JSON contents of the file as an instance of `User`.
     let u = serde_json::from_reader(file)?;
-
-    // Return the `User`.
     Ok(u)
 }
 
@@ -269,32 +266,24 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
     //Generate up some cards
     let mut card_vec: Vec<Card> = Vec::new();
 
-    /*
-    let file = File::open("abilities");
-    if !file.is_ok(){ 
-        println!("Cant find abilities file, giving you a blank deck");
-        return Deck::default();
-    }
-    println!("going to try and open the classes");
-    let classes = read_card_class("abilities").unwrap();
-    */
 
-    let data = r#"[{"name":"Default","ability_list":[{"all_pick":"all","ability_raws":[{"name":"Block","level_requirement":0,"target":"none","effect":"enemy cant attack hero","trigger":"on_player_attack"}]}],"init_health":0,"init_attack":0,"lvl_up_health":0,"lvl_up_attack":0},
-{"name":"Default","ability_list":[{"all_pick":"all","ability_raws":[{"name":"Block","level_requirement":0,"target":"none","effect":"enemy cant attack hero","trigger":"on_player_attack"}]}],"init_health":0,"init_attack":0,"lvl_up_health":0,"lvl_up_attack":0},
-{"name":"Default","ability_list":[{"all_pick":"all","ability_raws":[{"name":"Block","level_requirement":0,"target":"none","effect":"enemy cant attack hero","trigger":"on_player_attack"}]}],"init_health":0,"init_attack":0,"lvl_up_health":0,"lvl_up_attack":0}
-]"#;
+    //Check if file exists
+    println!("Does the abilities file exists?");
+     println!("{}", Path::new("abilities.json").exists());
 
-    // read in the file
-    let input: Result<Vec<CardClass>, serde_json::Error> = serde_json::from_str(data);
+    let input = read_card_class("abilities.json".to_owned());
 
     //Check that it seems good
     if input.is_ok() {
         println!("input is good");
     }
+
+
     else {
-        println!("Could not interpret file");
-        return Deck::default();
+        println!("Could not interpret abilities file");
+        
     }
+
     let classes: Vec<CardClass> = input.unwrap();
     //let classes = &input.unwrap();
     for _ in 0..num_cards {

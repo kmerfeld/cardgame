@@ -38,15 +38,15 @@ fn main() {
                          .help("The number of cards in the deck")
                          .takes_value(true)
                          .default_value("30")))
-        .subcommand(SubCommand::with_name("client")
-                    .arg(Arg::with_name("test")
-                        .long("start")
-                        .short("s")
-                        .takes_value(true)
-                        .default_value("thing")))
-        .subcommand(SubCommand::with_name("server")
-                    .about("Start a client (not working yet)"))
-        .get_matches();
+                         .subcommand(SubCommand::with_name("client")
+                                     .arg(Arg::with_name("test")
+                                          .long("start")
+                                          .short("s")
+                                          .takes_value(true)
+                                          .default_value("thing")))
+                         .subcommand(SubCommand::with_name("server")
+                                     .about("Start a client (not working yet)"))
+                         .get_matches();
 
 
     //handle the options provided
@@ -63,25 +63,28 @@ fn main() {
             create_matches.value_of("deck_name").unwrap().to_owned());
         },
         /*
-        ("server", Some(server_matches)) => {
-            println!("Not implemented yet");
-        },
-        */
+           ("server", Some(server_matches)) => {
+           println!("Not implemented yet");
+           },
+           */
         ("client", Some(client_matches)) => {
-    
+
             //make 2 players with decks
-            let mut p1_deck = Deck::read_deck_from_file("p1.deck.json".to_owned());
+            let p1_deck = read_deck_from_file("p1.deck.json".to_owned());
             let p2_deck = create_deck(10, 2000, "p2.deck.json".to_owned());
+
+            //For now we can just clone the deck if it doesnt load.
+            //later that should cause you to pick a different deck
+            let mut p1 = create_player("p1".to_owned(), p2_deck.clone());
+            let p2 = create_player("p2".to_owned(), p2_deck);
 
             //let mut p1_deck = p2_deck.clone();
             if p1_deck.is_ok() { 
-
-                let p1 = create_player("p1".to_owned(), p1_deck.ok().unwrap());
-                let p2 = create_player("p2".to_owned(), p2_deck);
-                gameloop(p1, p2);
-
+                p1.deck = p1_deck.unwrap();
             }
-                    },
+
+            gameloop(p1, p2);
+        },
         ("", None)   => println!("Look at ./cardgame --help"),
         _ => unreachable!(), // If all subcommands are defined above, anything else is unreachabe!()
     }

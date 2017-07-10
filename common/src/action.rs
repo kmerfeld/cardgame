@@ -132,10 +132,11 @@ pub fn trigger_single<'a>(trigger: String, id: &i32, caster: &'a mut Player, tar
     //Check abilities
     for thing in card.clone().abilities {
 
+        println!("activating {}", thing.name);
         for ability in thing.ability_raws {
             //If its the correct trigger type
             if ability.trigger == trigger {
-                println!("activating {}", ability.name);
+
                 //We know that the card is valid, and we have its index.
                 //Things can only ever use thier effects when they are on the feild,
                 //so we dont need to try and figure out where that is
