@@ -70,8 +70,8 @@ fn main() {
         ("client", Some(client_matches)) => {
 
             //make 2 players with decks
-            let p1_deck = read_deck_from_file("p1.deck.json".to_owned());
-            let p2_deck = create_deck(10, 2000, "p2.deck.json".to_owned());
+            let p1_deck = read_deck_from_file("p1.deck".to_owned());
+            let p2_deck = create_deck(10, 2000, "p2.deck".to_owned());
 
             //For now we can just clone the deck if it doesnt load.
             //later that should cause you to pick a different deck

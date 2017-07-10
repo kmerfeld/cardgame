@@ -6,20 +6,16 @@
                 "all_pick": "all",
                 "name": "Blood sacrifice",
                 "level_requirement": 0,
-                "trigger": "on_play"
+                "trigger": "on_play",
                 "ability_raws": [
                     {
-                        "target": "ally_creature",
-                        "effect": "destroy",
-
+                        "target": "ally creature",
+                        "effect": "destroy"
                     },
-                    { 
+                    {
                         "target": "self",
-                        "effect": "modify attack 5",
-                        "trigger": "on_play"
-
+                        "effect": "modify attack 5"
                     }
-
                 ]
             }
         ],

@@ -60,8 +60,6 @@ impl Card {
             // Here we roll on the table based on the cards class
         }
     }
-
-
     pub fn pretty_print(&self) {
         println!("[name:{}] | [class:{}] | [id:{}] | [health:{}] | [attack:{}] | [level:{}] | [exp:{}] | [cost:{}] | [fatigued:{}] | [dura:{}]",
                  &self.name,
@@ -76,7 +74,7 @@ impl Card {
                  &self.durability);
 
         for i in &self.abilities {
-            println!("{}", i.all_pick);
+            println!("Name: {} Trigger: {}", i.name, i.trigger);
             for j in &i.ability_raws {
                 println!("{}", j);
 
@@ -202,12 +200,14 @@ pub fn create_player(name: String, deck: Deck) -> Player {
 // The actions that the players do
 // These go "player" does "action" to "target".
 // The board then decides what happens
+/*
 pub struct Event {
     caster: Player, //ex: "player1"
     action: String, //ex: "Destroy"
     target: i32,   //ex: "<target id>
     text: String,   //ex: "Destroy target entity
 }
+*/
 
 
 /* The deck section */
