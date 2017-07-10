@@ -123,8 +123,8 @@ pub fn trigger_single<'a>(trigger: String, id: &i32, caster: &'a mut Player, tar
 
     //Get a reference to the card
     let mut card: Card = Card::default();
-    let mut index_o = get_index(&id, &caster.field);
-    let mut index_c = get_index(&id, &target_owner.field);
+    let index_o = get_index(&id, &caster.field);
+    let index_c = get_index(&id, &target_owner.field);
     if index_o.is_some() { card = caster.field[index_o.unwrap() as usize].clone();  }
     if index_c.is_some() { card = target_owner.field[index_c.unwrap()as usize].clone(); }
 
@@ -137,8 +137,6 @@ pub fn trigger_single<'a>(trigger: String, id: &i32, caster: &'a mut Player, tar
             //Things can only ever use thier effects when they are on the feild,
             //so we dont need to try and figure out where that is
 
-            let mut index = index_o.unwrap();
-
             let effect:Vec<&str> = ability.effect.split_whitespace().collect();
             //attack's only valid target is another monster
 
@@ -147,14 +145,13 @@ pub fn trigger_single<'a>(trigger: String, id: &i32, caster: &'a mut Player, tar
                 let t = ask("what monster do you want destroyed".to_owned());
 
                 //Check both fields
-                let mut index_c = get_index(&t.trim().parse::<i32>().unwrap(), &caster.field);
-                let mut index_t = get_index(&t.trim().parse::<i32>().unwrap(), &target_owner.field);
+                let index_c = get_index(&t.trim().parse::<i32>().unwrap(), &caster.field);
+                let index_t = get_index(&t.trim().parse::<i32>().unwrap(), &target_owner.field);
 
 
                 //if its your side
                 if index_c.is_some() { 
                     if ability.target == "target creature".to_owned() || ability.target == "ally creature".to_owned() {
-                        let thing: i32 = t.trim().parse::<i32>().unwrap();
                         move_card(&t.trim().parse::<i32>().unwrap(), &mut caster.field, &mut caster.graveyard);
                         //trigger_single("on_death".to_owned(), &id, &'a );
                     }
@@ -162,7 +159,6 @@ pub fn trigger_single<'a>(trigger: String, id: &i32, caster: &'a mut Player, tar
 
                 //If its on the opponents side
                 else if index_t.is_some() { 
-                    let thing: i32 = t.trim().parse::<i32>().unwrap();
                     if ability.target == "target enemy creature".to_owned() {
                         move_card(&t.trim().parse::<i32>().unwrap(), &mut target_owner.field, &mut target_owner.graveyard);
                         //trigger_single("on_death".to_owned());
@@ -250,46 +246,61 @@ pub fn modify_stat<'a>(id: &'a &i32, stat: String, amount: i32, location: &'a mu
     if index.is_some() {
         if stat == "health" { location[index.unwrap() as usize].health += amount; }
         else if stat == "attack" { location[index.unwrap() as usize].attack += amount; }
-            else if stat == "durability" { location[index.unwrap() as usize].durability += amount; }
-        }
-        else {
-            println!("Could not find creature");
-        }
+        else if stat == "durability" { location[index.unwrap() as usize].durability += amount; }
     }
+    else {
+        println!("Could not find creature");
+    }
+}
 
 
-    //Checks all creatures on a field
-    pub fn trigger_player<'a>(trigger: String, you: &'a mut Player, opponent: &'a mut Player) {}
-    //This will have the following triggers,
-    //on player_attacked
-    //on turn_start
-    //on turn_end
+//Checks all creatures on a field
+pub fn trigger_player<'a>(trigger: String, you: &'a mut Player, opponent: &'a mut Player) {}
+//This will have the following triggers,
+//on player_attacked
+//on turn_start
+//on turn_end
 
 
 
-    pub fn untill_turn_start<'a>(mut player: &'a mut Player) {
+pub fn untill_turn_start<'a>(mut player: &'a mut Player) {
 
-        player.field[0].abilities.remove(0);
+    player.field[0].abilities.remove(0);
 
-        for i in &mut player.field {
-            for j in 0..i.abilities.len() {
-                if i.abilities[j].trigger == "untill_turn_start".to_owned() {
-                    i.abilities.remove(j);
-                }
+    for i in &mut player.field {
+        for j in 0..i.abilities.len() {
+            if i.abilities[j].trigger == "untill_turn_start".to_owned() {
+                i.abilities.remove(j);
             }
         }
     }
-    pub fn untill_turn_end<'a>(mut player: &'a mut Player) {
+}
+pub fn untill_turn_end<'a>(mut player: &'a mut Player) {
 
-        player.field[0].abilities.remove(0);
+    player.field[0].abilities.remove(0);
 
-        for i in &mut player.field {
-            for j in 0..i.abilities.len() {
-                if i.abilities[j].trigger == "untill_turn_end".to_owned() {
-                    i.abilities.remove(j);
-                }
+    for i in &mut player.field {
+        for j in 0..i.abilities.len() {
+            if i.abilities[j].trigger == "untill_turn_end".to_owned() {
+                i.abilities.remove(j);
             }
         }
     }
+}
 
+#[cfg(test)]
+mod tests {
+    use action::*;
+    use board::*;
+
+    #[test]
+    fn test_move_card() {
+        let card: Card = Card{name: "Test_card".to_owned(),  ..Card::default()};
+        let mut hand: Vec<Card> = Vec::new();
+        let mut field: Vec<Card> = Vec::new();
+        hand.push(card.clone());
+        move_card(&card.id, &mut hand, &mut field);
+        assert!(field.last().unwrap().name == "Test_card");
+    }
+}
 
