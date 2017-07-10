@@ -132,10 +132,14 @@ pub fn trigger_single<'a>(trigger: String, id: &i32, caster: &'a mut Player, tar
     //Check abilities
     for thing in card.clone().abilities {
 
-        println!("activating {}", thing.name);
-        for ability in thing.ability_raws {
-            //If its the correct trigger type
-            if ability.trigger == trigger {
+        if thing.trigger == trigger {
+            println!("activating {}", thing.name);
+
+
+            for ability in thing.ability_raws {
+                println!("acticating next part of {}", thing.name);
+                //If its the correct trigger type
+
 
                 //We know that the card is valid, and we have its index.
                 //Things can only ever use thier effects when they are on the feild,
@@ -314,17 +318,15 @@ mod tests {
     fn test_ability_modify(){
         let a: AbilityRaw = AbilityRaw{
             target: "enemy_field".to_owned(),
-            trigger: "on_play".to_owned(),
             effect: "modify attack 5".to_owned()};
         let b: AbilityRaw = AbilityRaw{
             target: "enemy_field".to_owned(),
-            trigger: "on_play".to_owned(),
             effect: "modify health 5".to_owned()};
 
         let mut buff: Ability = Ability::default();
         buff.ability_raws.push(b);
         buff.ability_raws.push(a);
-        
+
 
         let mut card: Card = Card{name: "Test_card".to_owned(), id: 1,  ..Card::default()};
 

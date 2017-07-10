@@ -92,14 +92,13 @@ pub struct AbilityRaw {
 
     pub target: String,
     pub effect: String,
-    pub trigger: String,
+
 }
 impl Default for AbilityRaw{
     fn default() -> AbilityRaw {
         return AbilityRaw{
             target: "".to_owned(),
             effect: "".to_owned(),
-            trigger: "".to_owned(),
         };
     }
 }
@@ -107,7 +106,7 @@ impl Default for AbilityRaw{
 
 impl fmt::Display for AbilityRaw {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "({}, {}, {})", self.trigger, self.target, self.effect)
+        write!(f, "({}, {})", self.target, self.effect)
     }
 }
 
@@ -117,10 +116,11 @@ pub struct Ability {
     pub level_requirement: i32,
     pub all_pick : String,
     pub ability_raws: Vec<AbilityRaw>,
+    pub trigger: String,
 }
 impl Default for Ability {
     fn default() -> Ability {
-        return Ability{ name: "ability_1".to_string(), level_requirement: 0, all_pick: "all".to_owned(), ability_raws: Vec::new()};
+        return Ability{ name: "ability_1".to_string(), level_requirement: 0, all_pick: "all".to_owned(), ability_raws: Vec::new(), trigger: "on_play".to_owned()};
 
     }
 }

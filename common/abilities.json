@@ -6,11 +6,12 @@
                 "all_pick": "all",
                 "name": "Blood sacrifice",
                 "level_requirement": 0,
+                "trigger": "on_play"
                 "ability_raws": [
                     {
                         "target": "ally_creature",
                         "effect": "destroy",
-                        "trigger": "on_play"
+
                     },
                     { 
                         "target": "self",
