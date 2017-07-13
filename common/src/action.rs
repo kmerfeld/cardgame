@@ -337,7 +337,7 @@ mod tests {
         card.abilities.push(buff);
 
 
-        let mut d: Deck = Deck{cards: Vec::new(), name_of_deck: "deck".to_owned()};
+        let mut d: Deck = Deck{cards: Vec::new(), name_of_deck: "deck".to_owned(), ..Deck::default()};
         let mut p1: Player = create_player("p1".to_owned(), d.clone());
         let mut p2: Player = create_player("p2".to_owned(), d.clone());
 

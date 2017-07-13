@@ -11,7 +11,12 @@ use action::*;
 pub fn gameloop (mut player_1: Player, mut player_2: Player) {
 
     println!("Starting game");
+    player_1.deck.print();
  
+    player_1.deck.save_to_file();
+
+}
+/*
     //Determine the id's 
     player_1.id = 1;
     player_2.id = 2;   
@@ -108,3 +113,4 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
     }
 
 }
+*/
