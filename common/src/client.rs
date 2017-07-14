@@ -12,11 +12,9 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
 
     println!("Starting game");
     player_1.deck.print();
- 
+
     player_1.deck.save_to_file();
 
-}
-/*
     //Determine the id's 
     player_1.id = 1;
     player_2.id = 2;   
@@ -54,6 +52,8 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
         println!("\n#### This player's turn {}", current_player.name);
         current_player.print();    
         //First the player draws a card
+
+        current_player.mana += 1;
         draw_card(current_player, &mut max_id);
 
         //Turn starts,
@@ -61,6 +61,12 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
         for i in &mut current_player.field {
             i.fatigued = false;
         }
+        for i in  current_player.field.clone() {
+        trigger_single("on_turn_start".to_owned(), &i.id, &mut current_player, &mut other_player );
+        }
+
+
+
 
         let mut doing_things: bool = true;
         while doing_things {
@@ -80,7 +86,7 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
 
             else if split[0] == "play" {
                 let id: i32 = split[1].parse().unwrap();
-                move_card(&id, &mut current_player.hand, &mut current_player.field);
+                play_card(&id, &mut current_player.hand, &mut current_player.field, &mut current_player.mana);
                 trigger_single("on_play".to_owned(), &id, &mut current_player, &mut other_player);
             }
             else if split[0] == "attack" {
@@ -108,9 +114,13 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
             }
 
         }
+
+        for i in current_player.field.clone() {
+        trigger_single("on_turn_start".to_owned(), &i.id, &mut current_player, &mut other_player );
+        }
+
         if turn == false { turn = true; }
         else { turn = false; }
     }
 
 }
-*/

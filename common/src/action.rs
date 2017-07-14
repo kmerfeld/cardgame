@@ -14,6 +14,27 @@ pub fn draw_card<'a>(player: &'a mut Player, max_id: &'a mut i32) {
     }
 }
 
+pub fn play_card<'a>(id: &'a i32, mut curr_loc: &'a mut Vec<Card>, mut destination: &'a mut Vec<Card>, mut mana: &'a mut i32) { 
+    let index = get_index(&id, &curr_loc);
+    if index.is_some(){
+        if mana.clone() + 1 > curr_loc[index.unwrap() as usize].cost {
+            //TODO:find out a cleaner way to do this
+            let mut x = mana.clone();
+            x -= curr_loc[index.unwrap() as usize].cost;
+            mana.clone_from( &mut x.clone());
+            move_card(&id, &mut curr_loc, &mut destination);
+
+        }
+        else {
+            println!("Not enough mana");
+        }
+    }
+    else {
+        println!("Card doesnt exist");
+    }
+
+
+}
 //Move a card from one location to another
 pub fn move_card<'a>(id: &'a i32, curr_loc: &'a mut Vec<Card>, destination: &'a mut Vec<Card>) { 
     //find the index

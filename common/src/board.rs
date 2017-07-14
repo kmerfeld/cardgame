@@ -168,15 +168,15 @@ pub struct Player {
     pub graveyard: Vec<Card>,
     pub health: i32,
     pub id: i32,
+    pub mana: i32,
 
 }
 impl Default for Player {
     fn default() -> Player {
-        return Player{ name: "default".to_owned(), deck: Deck::default(), field: Vec::new(), hand: Vec::new(), graveyard: Vec::new(), health: 0, id: 0 };    
+        return Player{ name: "default".to_owned(), deck: Deck::default(), field: Vec::new(), hand: Vec::new(), graveyard: Vec::new(), health: 0, id: 0, mana: 0 };    
     }
 }
 impl Player {
-    /*
     pub fn print(&self) {
         println!("Player is: {}", &self.name);
         println!("They have {} health", &self.health);
@@ -192,8 +192,8 @@ impl Player {
         for i in &self.graveyard {
             i.pretty_print();
         }
+        println!("has {} mana left", &self.mana)
     }
-    */
 }
 
 pub fn create_player(name: String, deck: Deck) -> Player {
@@ -201,7 +201,7 @@ pub fn create_player(name: String, deck: Deck) -> Player {
     let field = Vec::new();
     let graveyard = Vec::new();
     let health: i32 = 30;
-    let player = Player { name: name, id: 0, health: health, deck: deck, hand: hand, field: field, graveyard: graveyard};
+    let player = Player { name: name, id: 0, health: health, deck: deck, hand: hand, field: field, graveyard: graveyard, mana:0};
     return player;
 }
 
@@ -401,8 +401,6 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
     let classes: Vec<CardClass> = input.unwrap();
     let mut deck = Deck{ name_of_deck: "thing".to_owned(), card_classes: classes.clone(), ..Deck::default()};
     for _ in 0..num_cards {
-        let which_class = rand::thread_rng().gen_range(0, classes.len());
-        println!("Creating a card of type {}", classes[which_class].name);
         card_vec.push(create_card(&deck));
     }
     deck.cards = card_vec;
@@ -438,3 +436,4 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
 
     return deck;
 }
+
