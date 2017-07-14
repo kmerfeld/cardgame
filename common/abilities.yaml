@@ -1,0 +1,158 @@
+---
+# Name of the class
+- name: SpellCaster
+  # This is the abilities availiable to this class
+  ability_list:
+  # all_pick is not implemented.
+  # it will be for decideing if all abilities are used
+  # or if you get to pick x of them
+  - all_pick: all
+    # Name of the ability
+    name: Blood sacrifice
+    #minimum level you must be to get the ability
+    level_requirement: 0
+    # When the ability triggers
+    # These are the valid triggers:
+    # - on_attack, on_defend, on_combat, on_player_attacked, on_play
+    # - on_death, on_turn_start, on_turn_end, until_turn_start, until_turn_end
+    trigger: on_play
+    # define abilities targets and effects
+    # Valid targets:
+    # - self, player, enemy, target_creature, target enemy creature, target ally creature
+    # - target player, board, both fields, enemy board, ally board
+    
+    # Valid effects: 
+    # - modify stat x to y, permanantly_modify stat x to y, heal x by y,
+    # - damage x by y, give_ability x to y, return x, revive x, destroy x, block
+    # note: effects can each only use a subset of targets
+    ability_raws:
+    - target: ally creature
+      effect: destroy
+    - target: self
+      effect: modify attack 5
+  # the stats a creature will be created with
+  init_health: 1
+  init_attack: 0
+
+  # This is used to determine what mana costs a card will spawn with, and how many stat
+  # points it will have.
+  # The first column is the mana cost a card will get,
+  # The second column is the probability it will spawn at that mana cost
+  # the third is how many stat points are awarded at that level.
+  # Note: you get all stat points from levels under you,
+  # if a card costs 5, it will get the points from 1,2,3,4 and 5
+  init_stats:
+  - [1,25,2]
+  - [2,40,2]
+  - [3,20,2]
+  - [4,9,2]
+  - [5,5,2]
+  - [6,0,2]
+  - [7,0,2]
+  - [8,0,2]
+  - [9,0,2]
+  - [10,1,2]
+  # Once a cards mana cost is determined, it rolls on this table to gain 
+  # health, attack, and abilities.
+  # the first column is the mana cost,
+  # the second is the chance to gain an ability,
+  # the third is the chance to gain an attack point
+  # the fourth is the chance to gain a health point
+  # Note: if a card is level 5, it will roll on the 1 mana cost row for each
+  # mana point awarded from init_stats at mana cost 1, then it will roll on 
+  # cost 2 however many times init_stats tells it to, then 3, 4, and finally 5,
+  # 
+  # This stat can be used to shape the general path that a card gains stats,
+  # You could have a class that heavily gains stats at cost 1-5, then gains abilities
+  # for the next 5 mana costs
+  init_points:
+  - [1,90,4,6]
+  - [2,90,4,6]
+  - [3,90,4,6]
+  - [4,90,4,6]
+  - [5,90,4,6]
+  - [6,90,4,6]
+  - [7,90,4,6]
+  - [8,90,4,6]
+  - [9,90,4,6]
+  - [10,90,4,6]
+  # level_stats is how many stat points will be gained upon reaching each level
+  level_stats:
+  - [1,1]
+  - [2,1]
+  - [3,1]
+  - [4,1]
+  - [5,1]
+  # Simular to init_points, determines what to spend stat points from init_points on
+  level_points:
+  - [1,90,4,6]
+  - [2,70,24,6]
+  - [3,60,34,6]
+  - [4,40,54,6]
+  - [5,50,40,0]
+
+- name: attacker
+  ability_list:
+  - all_pick: all
+    name: Destructive rage
+    level_requirement: 0
+    trigger: on_play
+    ability_raws:
+    - target: ally field
+      effect: modify attack 1
+    - target: self
+      effect: modify health -1
+  - all_pick: all
+    name: Quick learner
+    level_requirement: 0
+    trigger: on_turn_end
+    ability_raws:
+    - target: self
+      effect: modify health 1
+    - target: self
+      effect: modify attack 1
+  - all_pick: all
+    name: Death by killing
+    level_requirement: 0
+    trigger: on_play
+    ability_raws:
+    - target: target enemy creature
+      effect: destroy
+    - target: self
+      effect: destroy
+  init_health: 1
+  init_attack: 2
+  init_stats:
+  - [1,25,2]
+  - [2,40,2]
+  - [3,20,2]
+  - [4,9,2]
+  - [5,5,2]
+  - [6,0,2]
+  - [7,0,2]
+  - [8,0,2]
+  - [9,0,2]
+  - [10,1,2]
+  init_points:
+  - [1,90,4,6]
+  - [2,90,4,6]
+  - [3,90,4,6]
+  - [4,90,4,6]
+  - [5,90,4,6]
+  - [6,90,4,6]
+  - [7,90,4,6]
+  - [8,90,4,6]
+  - [9,90,4,6]
+  - [10,90,4,6]
+  level_stats:
+  - [1,1]
+  - [2,1]
+  - [3,1]
+  - [4,1]
+  - [5,1]
+  level_points:
+  - [1,90,4,6]
+  - [2,70,24,6]
+  - [3,60,34,6]
+  - [4,40,54,6]
+  - [5,50,40,0]

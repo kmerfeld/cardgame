@@ -1,5 +1,6 @@
 extern crate serde;
 extern crate serde_json;
+extern crate serde_yaml;
 extern crate rand;
 
 use std::error::Error;
@@ -261,9 +262,11 @@ pub fn read_deck_from_file<P: AsRef<Path>>(path: P) -> Result<Deck, Box<Error>> 
 
 fn read_card_class<P: AsRef<Path>>(path: P) -> Result<Vec<CardClass>, Box<Error>> {
     let file = File::open(path)?;
-    let u = serde_json::from_reader(file)?;
+    let u = serde_yaml::from_reader(file)?;
     Ok(u)
 }
+
+
 
 
 pub fn create_card<'a>(deck: &'a Deck) -> Card {
@@ -373,6 +376,10 @@ fn add_ability<'a>(card: &'a mut Card, class: &'a CardClass) {
     }
 }
 
+fn get_unique_id(num_cards: &i32) {
+    
+
+}
 
 //TODO: investigate this with 0 cards and 0 exp
 pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> Deck{
@@ -380,12 +387,11 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
     let mut card_vec: Vec<Card> = Vec::new();
 
 
-
     //Check if file exists
     println!("Does the abilities file exists?");
-    println!("{}", Path::new("abilities.json").exists());
+    println!("{}", Path::new("abilities.yaml").exists());
 
-    let input = read_card_class("abilities.json".to_owned());
+    let input = read_card_class("abilities.yaml".to_owned());
 
     //Check that it seems good
     if input.is_ok() {
@@ -436,4 +442,3 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
 
     return deck;
 }
-
