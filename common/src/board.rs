@@ -11,7 +11,6 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::fmt;
 
-
 /* The Card section */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Card {
@@ -75,11 +74,8 @@ impl Card {
                  &self.durability);
 
         for i in &self.abilities {
-            println!("Name: {} Trigger: {}", i.name, i.trigger);
-            for j in &i.ability_raws {
-                println!("{}", j);
+            println!("\tName: {} Trigger: {}", i.name, i.trigger);
 
-            }
         }
     }
 }
@@ -224,6 +220,7 @@ pub struct Deck {
     pub name_of_deck: String,
     pub cards: Vec<Card>,
     pub card_classes: Vec<CardClass>,
+    pub biggest_id: i32, 
 
 }
 
@@ -232,7 +229,8 @@ impl Default for Deck {
         return Deck{
             name_of_deck: "default".to_owned(),
             cards: Vec::new(),
-            card_classes: Vec::new()};
+            card_classes: Vec::new(),
+            biggest_id: 0};
     }
 }
 
@@ -269,7 +267,7 @@ fn read_card_class<P: AsRef<Path>>(path: P) -> Result<Vec<CardClass>, Box<Error>
 
 
 
-pub fn create_card<'a>(deck: &'a Deck) -> Card {
+pub fn create_card<'a>(deck: &'a mut  Deck) -> Card {
 
     //Pick a random class
     let class_i = rand::thread_rng().gen_range(0, deck.card_classes.len());
@@ -277,7 +275,10 @@ pub fn create_card<'a>(deck: &'a Deck) -> Card {
     let class: &CardClass = &deck.card_classes[class_i];
     let mut card = Card::default();
 
-    //card.name = format!("Level 0 {}", class.name); 
+    deck.biggest_id += 1;
+    card.id = deck.biggest_id.clone();
+
+    card.name = format!("Level 0 {}", class.name); 
     card.health = class.init_health;
     card.attack = class.init_attack;
     card.level = 0;
@@ -376,10 +377,6 @@ fn add_ability<'a>(card: &'a mut Card, class: &'a CardClass) {
     }
 }
 
-fn get_unique_id(num_cards: &i32) {
-    
-
-}
 
 //TODO: investigate this with 0 cards and 0 exp
 pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> Deck{
@@ -407,7 +404,7 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
     let classes: Vec<CardClass> = input.unwrap();
     let mut deck = Deck{ name_of_deck: "thing".to_owned(), card_classes: classes.clone(), ..Deck::default()};
     for _ in 0..num_cards {
-        card_vec.push(create_card(&deck));
+        card_vec.push(create_card(&mut deck));
     }
     deck.cards = card_vec;
 

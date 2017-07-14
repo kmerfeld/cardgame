@@ -31,8 +31,8 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
     // draw cards for each player
     for i in 0..6 {
         println!("drawing_cards");
-        draw_card(&mut player_1, &mut max_id);
-        draw_card(&mut player_2, &mut max_id);
+        draw_card(&mut player_1);
+        draw_card(&mut player_2);
     }
 
     player_1.print();
@@ -54,7 +54,7 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
         //First the player draws a card
 
         current_player.mana += 1;
-        draw_card(current_player, &mut max_id);
+        draw_card(current_player);
 
         //Turn starts,
         //unfatigue all cards

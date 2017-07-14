@@ -120,6 +120,14 @@
       effect: destroy
     - target: self
       effect: destroy
+  - all_pick: all
+    name: Inspiring death
+    level_requirement: 0
+    trigger: on_death
+    ability_raws:
+    - target: ally field
+      effect: modify health 1
+
   init_health: 1
   init_attack: 2
   init_stats:
@@ -134,16 +142,16 @@
   - [9,0,2]
   - [10,1,2]
   init_points:
-  - [1,90,4,6]
-  - [2,90,4,6]
-  - [3,90,4,6]
-  - [4,90,4,6]
-  - [5,90,4,6]
-  - [6,90,4,6]
-  - [7,90,4,6]
-  - [8,90,4,6]
-  - [9,90,4,6]
-  - [10,90,4,6]
+  - [1,20,30,30]
+  - [2,20,30,30]
+  - [3,20,30,30]
+  - [4,20,30,30]
+  - [5,20,30,30]
+  - [6,20,30,30]
+  - [7,20,30,30]
+  - [8,20,30,30]
+  - [9,20,30,30]
+  - [10,20,30,30]
   level_stats:
   - [1,1]
   - [2,1]
