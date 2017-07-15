@@ -6,7 +6,7 @@ use std::io::{self, BufRead};
 //Allow something to draw a card
 pub fn draw_card<'a>(player: &'a mut Player) {
     if player.deck.cards.len() > 0 {
-        let mut topcard: Card = player.deck.cards.pop().unwrap();
+        let topcard: Card = player.deck.cards.pop().unwrap();
         println!("{}", topcard);
         player.hand.push(topcard);
     }
@@ -59,7 +59,7 @@ pub fn move_card<'a>(id: &'a i32, mut curr_loc: &'a mut Vec<Card>, mut destinati
 
 
 // Attack a player right in the face with one of your cards
-pub fn attack_face<'a>(attacker: &'a mut i32, mut target: &'a mut Player, mut you: &'a mut Player) {
+pub fn attack_face<'a>(attacker: &'a i32, mut target: &'a mut Player, mut you: &'a mut Player) {
     let mut index: i32 = -1;
     for i in 0..you.field.len() {
         if you.field[i].id == attacker.clone() { index = i as i32; }
@@ -68,8 +68,7 @@ pub fn attack_face<'a>(attacker: &'a mut i32, mut target: &'a mut Player, mut yo
     if index < 0 { 
         println!("Monster doesnt exist");} 
     else {
-        //trigger_abilities("on_player_attacked".to_owned(), &mut you.field[index as usize].clone(), &mut you, &mut target);
-
+        trigger_ability("on_player_attacked".to_owned(), &index, &mut you, &mut target);
         target.health -= you.field[index as usize].attack;
     }
 }
@@ -105,12 +104,14 @@ pub fn attack<'a>(attacker: &'a i32, target: &'a i32, mut you: &'a mut Player, m
             opponent.field[t].health -= you.field[a].attack;
 
             //Trigger on death
-            trigger_abilities("on-combat".to_owned(), &mut you.field[a].clone(), &mut you, &mut opponent);
-            trigger_abilities("on-combat".to_owned(), &mut opponent.field[t].clone(), &mut opponent, &mut you);
-
+        
             //move bodies to the graveyard
-            if you.field[a].health < 1 { move_card(&attacker, &mut you.field, &mut you.graveyard); }
-            if opponent.field[t].health < 1 { move_card(&target, &mut opponent.field, &mut opponent.graveyard); }
+            if you.field[a].health < 1 { 
+                move_card(&attacker, &mut you.field, &mut you.graveyard);
+            }
+            if opponent.field[t].health < 1 { 
+                move_card(&target, &mut opponent.field, &mut opponent.graveyard);
+            }
         }
     }
 }
@@ -138,7 +139,7 @@ fn ask(message: String) -> String {
 }
 /* Abilities */
 
-pub fn trigger_single<'a>(trigger: String, id: &i32, mut caster: &'a mut Player, mut target_owner: &'a mut Player) {
+pub fn trigger_ability<'a>(trigger: String, id: &i32, mut caster: &'a mut Player, mut target_owner: &'a mut Player) {
 
     //Get a reference to the card
     let mut card: Card = Card::default();
@@ -192,7 +193,7 @@ pub fn trigger_single<'a>(trigger: String, id: &i32, mut caster: &'a mut Player,
                                     if index_c.is_some() { 
                                         if ability.target == "target creature".to_owned() || ability.target == "ally creature".to_owned() {
                                             move_card(&which[0].trim().parse::<i32>().unwrap(), &mut caster.field, &mut caster.graveyard);
-                                            trigger_single("on_death".to_owned(), &which[0].trim().parse::<i32>().unwrap(), &mut caster, &mut target_owner );
+                                            trigger_ability("on_death".to_owned(), &which[0].trim().parse::<i32>().unwrap(), &mut caster, &mut target_owner );
                                             found_target = true;
                                         }
                                     }
@@ -205,7 +206,7 @@ pub fn trigger_single<'a>(trigger: String, id: &i32, mut caster: &'a mut Player,
                                     if index_t.is_some() { 
                                         if ability.target == "target enemy creature".to_owned() {
                                             move_card(&which[0].trim().parse::<i32>().unwrap(), &mut target_owner.field, &mut target_owner.graveyard);
-                                            trigger_single("on_death".to_owned(), &which[0].trim().parse::<i32>().unwrap(), &mut target_owner, &mut caster );
+                                            trigger_ability("on_death".to_owned(), &which[0].trim().parse::<i32>().unwrap(), &mut target_owner, &mut caster );
                                             found_target = true;
                                         }
                                     }
@@ -359,7 +360,7 @@ mod tests {
         p2.field.push(card1);
         p2.field.push(card2);
 
-        trigger_single("on_play".to_owned(), &card.id, &mut p1, &mut p2 );
+        trigger_ability("on_play".to_owned(), &card.id, &mut p1, &mut p2 );
         assert!(p2.field[0].attack == 5);
         assert!(p2.field[1].attack == 5);
         assert!(p2.field[0].health == 5);

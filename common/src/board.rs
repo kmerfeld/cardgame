@@ -285,7 +285,6 @@ pub fn create_card<'a>(deck: &'a mut  Deck) -> Card {
     card.durability = 10;
     card.class_name = class.name.clone();
 
-    let mut stat_points: i32= 0;
     //get mana cost
     //What this is doing is looking at a 2d vec to try and figure what mana 
     //cost to give to the card
@@ -403,6 +402,9 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
 
     let classes: Vec<CardClass> = input.unwrap();
     let mut deck = Deck{ name_of_deck: "thing".to_owned(), card_classes: classes.clone(), ..Deck::default()};
+
+    deck.name_of_deck = deck_name;
+
     for _ in 0..num_cards {
         card_vec.push(create_card(&mut deck));
     }

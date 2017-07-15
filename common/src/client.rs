@@ -1,14 +1,18 @@
 //First draft of client. no gui, no networking
 // This is what the server will do in the back
 extern crate rand;
-use rand::Rng;
+use rand::{Rng, thread_rng};
 use std::io::{self, BufRead};
 
 use board::*;
 use action::*;
 
 
-pub fn gameloop (mut player_1: Player, mut player_2: Player) {
+pub fn gameloop (mut player_1_orig:  Player, mut player_2_orig: Player) {
+    //We clone these cards so we will keep the originals
+    //at the end for persistance
+    let mut player_1 = player_1_orig.clone();
+    let mut player_2 = player_2_orig.clone();
 
     println!("Starting game");
     player_1.deck.print();
@@ -18,7 +22,6 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
     //Determine the id's 
     player_1.id = 1;
     player_2.id = 2;   
-    let mut max_id = 3;
 
     let mut game_is_going: bool = true;
     let mut turn:bool = true;
@@ -26,10 +29,11 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
     /* Board initialization*/
     //shuffle both decks
     //TODO: shuffle
-    //player_1.deck = task_rng().shuffle(player_1.deck);
-    //player_1.deck = task_rng().shuffle(player_1.deck);
+    let mut rng = thread_rng();
+    rng.shuffle(&mut player_1.deck.cards);
+    rng.shuffle(&mut player_2.deck.cards);
     // draw cards for each player
-    for i in 0..6 {
+    for _ in 0..6 {
         println!("drawing_cards");
         draw_card(&mut player_1);
         draw_card(&mut player_2);
@@ -50,10 +54,14 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
             other_player = &mut player_1;
         } 
         println!("\n#### This player's turn {}", current_player.name);
+
+        //Get a mana point
+        current_player.mana += 1;
+
         current_player.print();    
         //First the player draws a card
 
-        current_player.mana += 1;
+
         draw_card(current_player);
 
         //Turn starts,
@@ -62,11 +70,8 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
             i.fatigued = false;
         }
         for i in  current_player.field.clone() {
-        trigger_single("on_turn_start".to_owned(), &i.id, &mut current_player, &mut other_player );
+        trigger_ability("on_turn_start".to_owned(), &i.id, &mut current_player, &mut other_player );
         }
-
-
-
 
         let mut doing_things: bool = true;
         while doing_things {
@@ -87,7 +92,7 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
             else if split[0] == "play" {
                 let id: i32 = split[1].parse().unwrap();
                 play_card(&id, &mut current_player.hand, &mut current_player.field, &mut current_player.mana);
-                trigger_single("on_play".to_owned(), &id, &mut current_player, &mut other_player);
+                trigger_ability("on_play".to_owned(), &id, &mut current_player, &mut other_player);
             }
             else if split[0] == "attack" {
                 //This should all be moved to the board section
@@ -101,6 +106,12 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
 
                     attack(&attacker, &target, &mut current_player, &mut other_player);
                 }
+            }
+            else if split[0] == "attack_face" {
+                let mut id: i32 = split[1].parse().unwrap();
+                attack_face(&mut id, &mut other_player, &mut current_player);
+
+
             }
             else if split[0] == "look" {
                 current_player.print();
@@ -116,11 +127,13 @@ pub fn gameloop (mut player_1: Player, mut player_2: Player) {
         }
 
         for i in current_player.field.clone() {
-        trigger_single("on_turn_start".to_owned(), &i.id, &mut current_player, &mut other_player );
+        trigger_ability("on_turn_start".to_owned(), &i.id, &mut current_player, &mut other_player );
         }
 
         if turn == false { turn = true; }
         else { turn = false; }
     }
+
+    println!("Game is over");
 
 }
