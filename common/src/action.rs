@@ -24,17 +24,10 @@ pub fn play_card<'a>(id: &'a i32, mut curr_loc: &'a mut Vec<Card>, mut destinati
             println!("giving card with id {} 100 exp", curr_loc[index.unwrap() as usize]);
             curr_loc[index.unwrap() as usize].give_exp(100, &deck);
             move_card(&id, &mut curr_loc, &mut destination);
-
         }
-        else {
-            println!("Not enough mana");
-        }
+        else { println!("Not enough mana"); }
     }
-    else {
-        println!("Card doesnt exist");
-    }
-
-
+    else { println!("Card doesnt exist"); }
 }
 //Move a card from one location to another
 pub fn move_card<'a>(id: &'a i32, mut curr_loc: &'a mut Vec<Card>, mut destination: &'a mut Vec<Card>) { 
@@ -82,6 +75,7 @@ pub fn attack<'a>(attacker: &'a i32, target: &'a i32, mut you: &'a mut Player, m
     //dies do something to the rest of the field then we need it
 
     //turn the ids into an index. we can assume that the cards are all on the field
+    //and not in the graveyard or hand
     let mut a_index: i32 = -1;
     for i in 0..you.field.len() {
         if you.field[i].id == attacker.clone() { a_index = i as i32; }
@@ -97,6 +91,7 @@ pub fn attack<'a>(attacker: &'a i32, target: &'a i32, mut you: &'a mut Player, m
         let t = t_index as usize;
 
         if !you.field[a].fatigued {
+            you.field[a].fatigued = true;
 
             //Check for on-combat abilities
             //trigger_abilities("on-combat".to_owned(), &mut you.field[a].clone(), &mut you, &mut opponent);
@@ -115,6 +110,9 @@ pub fn attack<'a>(attacker: &'a i32, target: &'a i32, mut you: &'a mut Player, m
             if opponent.field[t].health < 1 { 
                 move_card(&target, &mut opponent.field, &mut opponent.graveyard);
             }
+        }
+        else {
+            println!("Cant attack, fatigued");
         }
     }
 }
@@ -354,7 +352,6 @@ mod tests {
         buff.ability_raws.push(b);
         buff.ability_raws.push(a);
 
-
         let mut card: Card = Card{name: "Test_card".to_owned(), id: 1,  ..Card::default()};
 
         let card1 = Card{ attack: 0, id: 2, ..Card::default()};
@@ -363,8 +360,7 @@ mod tests {
 
         card.abilities.push(buff);
 
-
-        let mut d: Deck = Deck{cards: Vec::new(), name_of_deck: "deck".to_owned(), ..Deck::default()};
+        let d: Deck = Deck{cards: Vec::new(), name_of_deck: "deck".to_owned(), ..Deck::default()};
         let mut p1: Player = create_player("p1".to_owned(), d.clone());
         let mut p2: Player = create_player("p2".to_owned(), d.clone());
 
@@ -401,8 +397,36 @@ mod tests {
         p1.field.push(card.clone());
 
         trigger_ability("on_play".to_owned(), &card.id, &mut p1, &mut p2 );
-        println!("{} {}", p1.field[0].health, p1.field[0].max_health);
         assert!(p1.field[0].health == 5);
         assert!(p1.field[0].max_health == 5);
+    }
+
+    #[test]
+    fn test_attack() {
+        let mut card: Card = Card{name: "Test_card".to_owned(),fatigued: false, id: 1, attack: 1, health: 1, ..Card::default()};
+        let mut d: Deck = Deck{cards: Vec::new(), name_of_deck: "deck".to_owned(), ..Deck::default()};
+        let mut p1: Player = create_player("p1".to_owned(), d.clone());
+        let mut p2: Player = create_player("p1".to_owned(), d.clone());
+        p1.field.push(card.clone());
+        p2.field.push(card.clone());
+
+        attack(&1, &1, &mut p1, &mut p2);
+
+        assert!(p1.graveyard.len() == 1);
+    }
+
+    //pub fn attack_face<'a>(attacker: &'a i32, mut target: &'a mut Player, mut you: &'a mut Player) {
+    #[test]
+    fn test_attack_face() {
+        let card: Card = Card{name: "Test_card".to_owned(),fatigued: false, id: 1, attack: 1, health: 1, ..Card::default()};
+        let d: Deck = Deck{cards: Vec::new(), name_of_deck: "deck".to_owned(), ..Deck::default()};
+        let mut p1: Player = create_player("p1".to_owned(), d.clone());
+        let mut p2: Player = create_player("p1".to_owned(), d.clone());
+        p1.field.push(card.clone());
+        p2.health = 30;
+
+        attack_face(&1, &mut p2, &mut p1);
+
+        assert!(p2.health == 29);
     }
 }
