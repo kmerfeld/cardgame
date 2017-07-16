@@ -12,7 +12,7 @@ pub fn draw_card<'a>(player: &'a mut Player) {
     }
 }
 
-pub fn play_card<'a>(id: &'a i32, mut curr_loc: &'a mut Vec<Card>, mut destination: &'a mut Vec<Card>, mut mana: &'a mut i32) { 
+pub fn play_card<'a>(id: &'a i32, mut curr_loc: &'a mut Vec<Card>, mut destination: &'a mut Vec<Card>, deck: &Deck, mut mana: &'a mut i32) { 
     let index = get_index(&id, &curr_loc);
     if index.is_some(){
         if mana.clone() + 1 > curr_loc[index.unwrap() as usize].cost {
@@ -20,6 +20,9 @@ pub fn play_card<'a>(id: &'a i32, mut curr_loc: &'a mut Vec<Card>, mut destinati
             let mut x = mana.clone();
             x -= curr_loc[index.unwrap() as usize].cost;
             mana.clone_from( &mut x.clone());
+            //Grant exp
+            println!("giving card with id {} 100 exp", curr_loc[index.unwrap() as usize]);
+            curr_loc[index.unwrap() as usize].give_exp(100, &deck);
             move_card(&id, &mut curr_loc, &mut destination);
 
         }
@@ -104,7 +107,7 @@ pub fn attack<'a>(attacker: &'a i32, target: &'a i32, mut you: &'a mut Player, m
             opponent.field[t].health -= you.field[a].attack;
 
             //Trigger on death
-        
+
             //move bodies to the graveyard
             if you.field[a].health < 1 { 
                 move_card(&attacker, &mut you.field, &mut you.graveyard);
@@ -140,7 +143,6 @@ fn ask(message: String) -> String {
 /* Abilities */
 
 pub fn trigger_ability<'a>(trigger: String, id: &i32, mut caster: &'a mut Player, mut target_owner: &'a mut Player) {
-
     //Get a reference to the card
     let mut card: Card = Card::default();
     let index_o = get_index(&id, &caster.field);
@@ -169,7 +171,7 @@ pub fn trigger_ability<'a>(trigger: String, id: &i32, mut caster: &'a mut Player
 
                     let mut found_target: bool = false;
 
-                    
+
                     while !found_target {
                         if ability.target == "self" {
                             move_card(&id, &mut caster.field, &mut caster.graveyard);
@@ -211,10 +213,7 @@ pub fn trigger_ability<'a>(trigger: String, id: &i32, mut caster: &'a mut Player
                                         }
                                     }
                                 }
-
-
                                 //Check both fields
-
                                 else {
                                     println!("invalid target. ");
                                 }
@@ -223,92 +222,105 @@ pub fn trigger_ability<'a>(trigger: String, id: &i32, mut caster: &'a mut Player
                     }
                 }
                 //Modify ability
-                else if effect[0].to_string() == "modify" {
+                else if effect[0].to_string().contains("modify") {
+                    //Check if changes will be permanant
+                    let perm: bool = effect[0].contains("permanant");
+                    println!("is it perm? {}", perm);
+
                     //effect[1] is the stat we are looking to change,
                     //effect[2] is by how much we will change it
                     if ability.target == "self" {
                         if index_o.is_some() {
-                            modify_stat(&id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut caster.field, &mut caster.graveyard);
+                            modify_stat(perm, &id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut caster.field, &mut caster.graveyard);
+
                         }
                     }
-                    else if ability.target == "target_creature" {
+                    else if ability.target.contains("target_creature") {
                         let tmp_id: String = ask("What id do you want to target".to_owned());
                         let target_id = tmp_id.parse::<i32>();
 
-                            if target_id.is_ok() {
-                                let is_ally = get_index(&target_id.clone().unwrap(), &caster.field);
-                                if is_ally.is_some() {
-                                    modify_stat(&id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut caster.field, &mut caster.graveyard);
-                                }
-                                else {
-                                    let is_ally = get_index(&target_id.unwrap(), &caster.field);
-                                    if is_ally.is_some() {
-                                        modify_stat(&id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut target_owner.field, &mut caster.graveyard);
-                                    }
-                                }
+                        if target_id.is_ok() {
+                            let is_ally = get_index(&target_id.clone().unwrap(), &caster.field);
+                            if is_ally.is_some() {
+                                modify_stat(perm, &id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut caster.field, &mut caster.graveyard);
                             }
-                        }
-                        else if ability.target == "target_ally_creature" {
-                            let tmp_id: String = ask("What id do you want to target".to_owned());
-                            let target_id = tmp_id.parse::<i32>();
-
-                            if target_id.is_ok() {
-                                let is_ally = get_index(&target_id.clone().unwrap(), &caster.field);
-                                if is_ally.is_some() {
-                                    modify_stat(&id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut caster.field, &mut caster.graveyard);
-                                }
-                            }
-                        }
-                        else if ability.target == "target_enemy_creature" {
-                            let tmp_id: String = ask("What id do you want to target".to_owned());
-                            let target_id = tmp_id.parse::<i32>();
-
-                            if target_id.is_ok() {
+                            else {
                                 let is_ally = get_index(&target_id.unwrap(), &caster.field);
                                 if is_ally.is_some() {
-                                    modify_stat(&id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut target_owner.field, &mut target_owner.graveyard);
+                                    modify_stat(perm, &id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut target_owner.field, &mut caster.graveyard);
                                 }
-                            }
-                        }
-                        else if ability.target == "both_fields" {
-                            for i  in 0..caster.field.len() {
-                                modify_stat(&&caster.field[i].id.clone(), effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut caster.field, &mut caster.graveyard);
-                            }
-                            for i in 0..target_owner.field.len() {
-                                modify_stat(&&target_owner.field[i].id.clone(), effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut target_owner.field, &mut target_owner.graveyard);
-                            }
-                        }
-                        else if ability.target == "enemy_field" {
-                            for i in 0..target_owner.field.len() {
-                                modify_stat(&&target_owner.field[i].id.clone(), effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut target_owner.field, &mut target_owner.graveyard);
-                            }
-
-                        }
-                        else if ability.target == "ally_field" {
-                            for i in 0..caster.field.len() {
-                                modify_stat(&&caster.field[i].id.clone(), effect[1].to_owned(), effect[2].parse::<i32>().unwrap(), &mut caster.field, &mut caster.graveyard);
                             }
                         }
                     }
+                    else if ability.target == "target_ally_creature" {
+                        let tmp_id: String = ask("What id do you want to target".to_owned());
+                        let target_id = tmp_id.parse::<i32>();
+
+                        if target_id.is_ok() {
+                            let is_ally = get_index(&target_id.clone().unwrap(), &caster.field);
+                            if is_ally.is_some() {
+                                modify_stat(perm, &id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut caster.field, &mut caster.graveyard);
+                            }
+                        }
+                    }
+                    else if ability.target == "target_enemy_creature" {
+                        let tmp_id: String = ask("What id do you want to target".to_owned());
+                        let target_id = tmp_id.parse::<i32>();
+
+                        if target_id.is_ok() {
+                            let is_ally = get_index(&target_id.unwrap(), &caster.field);
+                            if is_ally.is_some() {
+                                modify_stat(perm, &id, effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut target_owner.field, &mut target_owner.graveyard);
+                            }
+                        }
+                    }
+                    else if ability.target == "both_fields" {
+                        for i  in 0..caster.field.len() {
+                            modify_stat(perm, &&caster.field[i].id.clone(), effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut caster.field, &mut caster.graveyard);
+                        }
+                        for i in 0..target_owner.field.len() {
+                            modify_stat(perm, &&target_owner.field[i].id.clone(), effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut target_owner.field, &mut target_owner.graveyard);
+                        }
+                    }
+                    else if ability.target == "enemy_field" {
+                        for i in 0..target_owner.field.len() {
+                            modify_stat(perm, &&target_owner.field[i].id.clone(), effect[1].to_owned(), effect[2].parse().unwrap_or(0), &mut target_owner.field, &mut target_owner.graveyard);
+                        }
+
+                    }
+                    else if ability.target == "ally_field" {
+                        for i in 0..caster.field.len() {
+                            modify_stat(perm, &&caster.field[i].id.clone(), effect[1].to_owned(), effect[2].parse::<i32>().unwrap(), &mut caster.field, &mut caster.graveyard);
+                        }
+                    }
+                }
             }
         }
     }
 }
 
-pub fn modify_stat<'a>(id: &'a &i32, stat: String, amount: i32, mut location: &'a mut Vec<Card>, mut graveyard: &'a mut Vec<Card>) {
+pub fn modify_stat<'a>(permanant: bool, id: &'a &i32, stat: String, amount: i32, mut location: &'a mut Vec<Card>, mut graveyard: &'a mut Vec<Card>) {
     let index = get_index(id, location);
     if index.is_some() {
-        if stat == "health" { location[index.unwrap() as usize].health += amount;
+        //Permanantly modify a stat
+        if stat == "health" { 
+            //Modify temp health
+            location[index.unwrap() as usize].health += amount;
+            //Modify permanant health
+            if permanant { location[index.unwrap() as usize].max_health += amount; }
+            // kill the creature if needed
             if location[index.unwrap() as usize].health < 1 {
                 println!("a card died");
                 move_card(&id, &mut location, &mut graveyard);
-                
             }
         }
-
-        else if stat == "attack" { location[index.unwrap() as usize].attack += amount; }
-        else if stat == "durability" { location[index.unwrap() as usize].durability += amount; }
+        else if stat == "attack" { 
+            location[index.unwrap() as usize].attack += amount; 
+            if permanant { location[index.unwrap() as usize].max_attack += amount; }
+        }
+        else if stat == "durability" && permanant { location[index.unwrap() as usize].durability += amount; }
     }
+
     else {
         println!("Could not find creature");
     }
@@ -365,5 +377,32 @@ mod tests {
         assert!(p2.field[1].attack == 5);
         assert!(p2.field[0].health == 5);
         assert!(p2.field[1].health == 5);
+    }
+    #[test]
+    fn test_permant_modify() {
+        let a: AbilityRaw = AbilityRaw{
+            target: "ally_field".to_owned(),
+            effect: "permanantly_modify health 5".to_owned()};
+
+        let mut buff: Ability = Ability::default();
+        buff.ability_raws.push(a);
+
+        let mut card: Card = Card{name: "Test_card".to_owned(), id: 1,  ..Card::default()};
+
+        let card1 = Card{ max_health: 0, health: 0, id: 2, ..Card::default()};
+
+        card.abilities.push(buff);
+
+
+        let mut d: Deck = Deck{cards: Vec::new(), name_of_deck: "deck".to_owned(), ..Deck::default()};
+        let mut p1: Player = create_player("p1".to_owned(), d.clone());
+        let mut p2: Player = create_player("p1".to_owned(), d.clone());
+
+        p1.field.push(card.clone());
+
+        trigger_ability("on_play".to_owned(), &card.id, &mut p1, &mut p2 );
+        println!("{} {}", p1.field[0].health, p1.field[0].max_health);
+        assert!(p1.field[0].health == 5);
+        assert!(p1.field[0].max_health == 5);
     }
 }

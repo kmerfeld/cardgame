@@ -8,12 +8,14 @@ use board::*;
 use action::*;
 
 
-pub fn gameloop (mut player_1_orig:  Player, mut player_2_orig: Player) {
+pub fn gameloop (mut player_1:  Player, mut player_2: Player) {
     //We clone these cards so we will keep the originals
     //at the end for persistance
-    let mut player_1 = player_1_orig.clone();
-    let mut player_2 = player_2_orig.clone();
 
+    //Initialize tmp values
+    player_1.deck.init();
+    player_2.deck.init();
+    
     println!("Starting game");
     player_1.deck.print();
 
@@ -91,7 +93,7 @@ pub fn gameloop (mut player_1_orig:  Player, mut player_2_orig: Player) {
 
             else if split[0] == "play" {
                 let id: i32 = split[1].parse().unwrap();
-                play_card(&id, &mut current_player.hand, &mut current_player.field, &mut current_player.mana);
+                play_card(&id, &mut current_player.hand, &mut current_player.field,&current_player.deck, &mut current_player.mana);
                 trigger_ability("on_play".to_owned(), &id, &mut current_player, &mut other_player);
             }
             else if split[0] == "attack" {
@@ -112,6 +114,10 @@ pub fn gameloop (mut player_1_orig:  Player, mut player_2_orig: Player) {
                 attack_face(&mut id, &mut other_player, &mut current_player);
 
 
+            }
+            else if split[0] == "win" {
+                game_is_going = false;
+                break;
             }
             else if split[0] == "look" {
                 current_player.print();
@@ -134,6 +140,8 @@ pub fn gameloop (mut player_1_orig:  Player, mut player_2_orig: Player) {
         else { turn = false; }
     }
 
+    player_1.de_init();
+    player_2.de_init();
     println!("Game is over");
 
 }

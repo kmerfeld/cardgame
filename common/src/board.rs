@@ -16,8 +16,11 @@ use std::fmt;
 pub struct Card {
     pub name: String,
     pub abilities: Vec<Ability>,
+    pub tmp_abilities: Vec<Ability>,
     pub health: i32,
     pub attack: i32,
+    pub max_health: i32,
+    pub max_attack: i32,
     pub level: i32,
     pub exp: i32,
     pub durability: i32,
@@ -28,11 +31,12 @@ pub struct Card {
 }
 
 impl Default for Card {
-
     fn default()  -> Card{
         return Card{
             name: "Default".to_string(),
             id: 0,
+            max_health: 0,
+            max_attack: 0,
             health: 0,
             attack: 0,
             level: 0,
@@ -40,6 +44,7 @@ impl Default for Card {
             durability: 0,
             class_name: "Default".to_owned(),
             abilities: Vec::new(),
+            tmp_abilities: Vec::new(),
             cost: 0,
             fatigued: true,
         };
@@ -48,16 +53,31 @@ impl Default for Card {
 
 impl fmt::Display for Card {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}, {}, {}", self.name, self.health, self.attack)
+        write!(f, "{}, {}, {}, {}", self.name, self.health, self.attack, self.cost)
     }
 }
 impl Card {
+    pub fn init(&mut self) {
+        println!("initializeing {}", &self.name);
+        self.health = self.max_health.clone();
+        self.attack = self.max_attack.clone();
+        self.tmp_abilities = Vec::new();
+    }
     //Grant exp to a card
-    pub fn give_exp(&mut self, x: i32) {
+    pub fn give_exp(&mut self, x: i32, deck: &Deck) {
         self.exp = &self.exp + x;
-        if self.exp > (self.level * 125 + 100 ) {
-            self.level = &self.level + 1;
-            // Here we roll on the table based on the cards class
+        //If exp is in the range to level up
+        loop {
+            //make sure that you dont get more levels than you can handle
+            println!("self.level = {}", self.level);
+            if self.exp > (self.level * 125 + 100 ) && self.level < 5 {
+                level_up(self, &deck);
+            }
+            else {
+                break;
+                //TODO: figure out what do do with extra exp
+                //the deck might get a slot for extra exp that is awarded on player.de_init()
+            }
         }
     }
     pub fn pretty_print(&self) {
@@ -143,8 +163,8 @@ impl Default for CardClass {
             init_attack: 0,
             init_stats: vec![vec![0]],
             init_points: vec![vec![0]],
-            level_stats: vec![vec![0]],
-            level_points: vec![vec![0]],
+            level_stats: vec![vec![1,1], vec![2,1], vec![3,1], vec![4,1], vec![5,1]],
+            level_points: vec![vec![1,33,33,33], vec![2,33,33,33], vec![3,33,33,33], vec![4,33,33,33], vec![5,33,33,33]],
         };
     }
 }
@@ -173,7 +193,16 @@ impl Default for Player {
         return Player{ name: "default".to_owned(), deck: Deck::default(), field: Vec::new(), hand: Vec::new(), graveyard: Vec::new(), health: 0, id: 0, mana: 0 };    
     }
 }
+
 impl Player {
+    // Allows player to save deck
+    pub fn de_init(&mut self){
+        //move all cards back to the deck and save deck
+        self.deck.cards.extend_from_slice(&self.field);
+        self.deck.cards.extend_from_slice(&self.graveyard);
+        self.deck.save_to_file();
+    }
+
     pub fn print(&self) {
         println!("Player is: {}", &self.name);
         println!("They have {} health", &self.health);
@@ -235,6 +264,11 @@ impl Default for Deck {
 }
 
 impl Deck {
+    pub fn init(&mut self){
+        for i in &mut self.cards {
+            i.init();
+        }
+    }
     pub fn print(&self) {
         println!("Name: {}", &self.name_of_deck);
         for i in &self.cards {
@@ -279,8 +313,8 @@ pub fn create_card<'a>(deck: &'a mut  Deck) -> Card {
     card.id = deck.biggest_id.clone();
 
     card.name = format!("Level 0 {}", class.name); 
-    card.health = class.init_health;
-    card.attack = class.init_attack;
+    card.max_health = class.init_health;
+    card.max_attack = class.init_attack;
     card.level = 0;
     card.durability = 10;
     card.class_name = class.name.clone();
@@ -338,7 +372,6 @@ pub fn create_card<'a>(deck: &'a mut  Deck) -> Card {
 
             let points = class.init_points[i as usize].clone();
 
-            println!("value:{}, ability:{}, attack:{}, health:{}", value, points[1], points[2], points[3]);
             //add ability
             if value < points[1] {
                 add_ability(&mut card, &class);
@@ -346,11 +379,11 @@ pub fn create_card<'a>(deck: &'a mut  Deck) -> Card {
             }
             //add attack
             else if value < points[1] + points[2]  {
-                card.attack += 1;
+                card.max_attack += 1;
                 println!("adding an attack point");
             }
             else if value < points[1] + points[2] + points[3] {
-                card.health += 1;
+                card.max_health += 1;
                 println!("adding a health point");
             }
         }
@@ -360,6 +393,51 @@ pub fn create_card<'a>(deck: &'a mut  Deck) -> Card {
 
     return card;
 }
+
+pub fn level_up<'a>(mut card: &'a mut Card, deck: &'a Deck) {
+
+    println!("Leveling up {} with id {} its level {}", card.name, card.id, card.level);
+    //For each level
+    //for each stat point gained that level
+    //find out which class this card belongs to
+    //if the class doesnt match up, just lump it in the first class
+    //TODO: consider making this cleaner
+    let mut class_index = 0;
+    for i in 0..deck.card_classes.len() {
+        if deck.card_classes[i].name == card.class_name {
+            class_index = i;
+        }
+    }
+    card.level += 1;
+    let class = &deck.card_classes[class_index];
+
+    //How many levels to assign
+    for _ in 1..class.level_stats[card.level as usize -1][1] {
+        let value = rand::thread_rng().gen_range(0, 100);
+
+        //Here we will figure out which we want
+
+        //this should be whatever leve you are.
+        //Note: we already += 1'ed the level
+        let points = class.level_points[card.level as usize].clone();
+
+        //add ability
+        if value < points[1] + 1 {
+            add_ability(&mut card, &class);
+            println!("adding an ability");
+        }
+        //add attack
+        else if value < points[1] + points[2] + 1  {
+            card.max_attack += 1;
+            println!("adding an attack point");
+        }
+        else if value < points[1] + points[2] + points[3] + 1 {
+            card.max_health += 1;
+            println!("adding a health point");
+        }
+    }
+}
+
 
 fn add_ability<'a>(card: &'a mut Card, class: &'a CardClass) {
     //we check a maximum of all the cards
@@ -430,7 +508,10 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
                 5 => to_give = 600,
                 _ => {},
             };
-            deck.cards[which_card].give_exp(to_give)
+            //TODO: for some reason it wont let me borrow deck as imutable, ill fix later
+            //for now i just clone deck to d and send that
+            let d = deck.clone();
+            deck.cards[which_card].give_exp(to_give, &d);
         }
         else {
             to_give = exp_to_grant;
@@ -440,4 +521,48 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
     deck.save_to_file();
 
     return deck;
+}
+
+#[cfg(test)]
+mod tests {
+    use board::*;
+
+    #[test] 
+    fn test_give_exp(){
+        let mut deck = Deck::default();
+        let mut card = Card::default();
+        let mut class = CardClass::default();
+        class.name = "test".to_owned();
+        class.ability_list.push(Ability::default());
+        card.class_name = "test".to_owned();
+        deck.card_classes.push(class);
+
+        let x: i32 = 1000;
+        card.give_exp(x, &deck);
+
+        assert!( card.level == 5);
+
+    }
+    #[test]
+    fn test_level_up() {
+        let mut deck = Deck::default();
+        let mut card = Card::default();
+        let mut class = CardClass::default();
+        class.name = "test".to_owned();
+        class.ability_list.push(Ability::default());
+        card.class_name = "test".to_owned();
+        deck.card_classes.push(class);
+
+        level_up(&mut card, &deck);
+        level_up(&mut card, &deck);
+        level_up(&mut card, &deck);
+        level_up(&mut card, &deck);
+        level_up(&mut card, &deck);
+
+        card.pretty_print();
+
+        assert!(card.level == 5);
+    }
+
+
 }
