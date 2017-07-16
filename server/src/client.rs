@@ -8,25 +8,25 @@ use board::*;
 use action::*;
 
 
-pub fn gameloop (mut player_1:  Player, mut player_2: Player) {
+pub fn gameloop(mut player_1: Player, mut player_2: Player) {
     //We clone these cards so we will keep the originals
     //at the end for persistance
 
     //Initialize tmp values
     player_1.deck.init();
     player_2.deck.init();
-    
+
     println!("Starting game");
     player_1.deck.print();
 
     player_1.deck.save_to_file();
 
-    //Determine the id's 
+    //Determine the id's
     player_1.id = 1;
-    player_2.id = 2;   
+    player_2.id = 2;
 
     let mut game_is_going: bool = true;
-    let mut turn:bool = true;
+    let mut turn: bool = true;
 
     /* Board initialization*/
     //shuffle both decks
@@ -47,20 +47,19 @@ pub fn gameloop (mut player_1:  Player, mut player_2: Player) {
         //Define who is who
         let mut current_player;
         let mut other_player;
-        if turn == true { 
+        if turn == true {
             current_player = &mut player_1;
             other_player = &mut player_2;
-        }
-        else {
+        } else {
             current_player = &mut player_2;
             other_player = &mut player_1;
-        } 
+        }
         println!("\n#### This player's turn {}", current_player.name);
 
         //Get a mana point
         current_player.mana += 1;
 
-        current_player.print();    
+        current_player.print();
         //First the player draws a card
 
 
@@ -71,8 +70,11 @@ pub fn gameloop (mut player_1:  Player, mut player_2: Player) {
         for i in &mut current_player.field {
             i.fatigued = false;
         }
-        for i in  current_player.field.clone() {
-        trigger_ability("on_turn_start".to_owned(), &i.id, &mut current_player, &mut other_player );
+        for i in current_player.field.clone() {
+            trigger_ability("on_turn_start".to_owned(),
+                            &i.id,
+                            &mut current_player,
+                            &mut other_player);
         }
 
         let mut doing_things: bool = true;
@@ -82,62 +84,69 @@ pub fn gameloop (mut player_1:  Player, mut player_2: Player) {
             //The options are "play", "attack", "look", and "help"
             let mut line = String::new();
             let stdin = io::stdin();
-            stdin.lock().read_line(&mut line).expect("Could not read line");
+            stdin
+                .lock()
+                .read_line(&mut line)
+                .expect("Could not read line");
 
-            let  split = line.split_whitespace();
+            let split = line.split_whitespace();
             let split: Vec<&str> = split.collect();
 
-            if split.is_empty()  { 
+            if split.is_empty() {
                 println!("enter a command, valid commands are \"play\", \"attack\", \"look\", and \"help\"");
-            }
-
-            else if split[0] == "play" {
+            } else if split[0] == "play" {
                 let id: i32 = split[1].parse().unwrap();
-                play_card(&id, &mut current_player.hand, &mut current_player.field,&current_player.deck, &mut current_player.mana);
-                trigger_ability("on_play".to_owned(), &id, &mut current_player, &mut other_player);
-            }
-            else if split[0] == "attack" {
+                play_card(&id,
+                          &mut current_player.hand,
+                          &mut current_player.field,
+                          &current_player.deck,
+                          &mut current_player.mana);
+                trigger_ability("on_play".to_owned(),
+                                &id,
+                                &mut current_player,
+                                &mut other_player);
+            } else if split[0] == "attack" {
                 //This should all be moved to the board section
                 //Make sure enough arguments were supplied
                 if split.len() < 3 {
                     println!("not enough arguments, try \"attack your_monster enemy\" to attack opponent, use 999");
-                }
-                else {
+                } else {
                     let attacker: i32 = split[1].parse().unwrap();
                     let target: i32 = split[2].parse().unwrap();
 
                     attack(&attacker, &target, &mut current_player, &mut other_player);
                 }
-            }
-            else if split[0] == "attack_face" {
+            } else if split[0] == "attack_face" {
                 let mut id: i32 = split[1].parse().unwrap();
                 attack_face(&mut id, &mut other_player, &mut current_player);
 
 
-            }
-            else if split[0] == "win" {
+            } else if split[0] == "win" {
                 game_is_going = false;
                 break;
-            }
-            else if split[0] == "look" {
+            } else if split[0] == "look" {
                 current_player.print();
                 println!("\n");
-            }
-            else if split[0] == "end" {
+            } else if split[0] == "end" {
                 doing_things = false;
-            }
-            else {
+            } else {
                 println!("enter a command, valid commands are \"play\", \"attack\", \"look\", and \"help\"");
             }
 
         }
 
         for i in current_player.field.clone() {
-        trigger_ability("on_turn_start".to_owned(), &i.id, &mut current_player, &mut other_player );
+            trigger_ability("on_turn_start".to_owned(),
+                            &i.id,
+                            &mut current_player,
+                            &mut other_player);
         }
 
-        if turn == false { turn = true; }
-        else { turn = false; }
+        if turn == false {
+            turn = true;
+        } else {
+            turn = false;
+        }
     }
 
     player_1.de_init();

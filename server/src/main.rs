@@ -1,18 +1,33 @@
 extern crate rand;
 extern crate serde_json;
 extern crate serde_yaml;
-#[macro_use] extern crate serde_derive;
-#[macro_use] extern crate clap;
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate clap;
+extern crate bytes;
+extern crate futures;
+extern crate tokio_io;
+extern crate tokio_proto;
+extern crate tokio_service;
+
+
+
 
 mod board;
 mod client;
 mod action;
+mod server;
 
 use clap::{Arg, App, SubCommand};
 use board::*;
 use client::gameloop;
+use server::*;
 
 fn main() {
+
+    server();
+    /*
     //clap options
     let matches = App::new("Cardgame")
         //.version(crate_version!())
@@ -101,4 +116,5 @@ fn main() {
         ("", None)   => println!("Look at ./cardgame --help"),
         _ => unreachable!(), // If all subcommands are defined above, anything else is unreachabe!()
     }
+    */
 }

@@ -25,35 +25,40 @@ pub struct Card {
     pub exp: i32,
     pub durability: i32,
     pub class_name: String,
-    pub cost:i32,
-    pub id:i32,
+    pub cost: i32,
+    pub id: i32,
     pub fatigued: bool,
 }
 
 impl Default for Card {
-    fn default()  -> Card{
-        return Card{
-            name: "Default".to_string(),
-            id: 0,
-            max_health: 0,
-            max_attack: 0,
-            health: 0,
-            attack: 0,
-            level: 0,
-            exp: 0,
-            durability: 0,
-            class_name: "Default".to_owned(),
-            abilities: Vec::new(),
-            tmp_abilities: Vec::new(),
-            cost: 0,
-            fatigued: true,
-        };
+    fn default() -> Card {
+        return Card {
+                   name: "Default".to_string(),
+                   id: 0,
+                   max_health: 0,
+                   max_attack: 0,
+                   health: 0,
+                   attack: 0,
+                   level: 0,
+                   exp: 0,
+                   durability: 0,
+                   class_name: "Default".to_owned(),
+                   abilities: Vec::new(),
+                   tmp_abilities: Vec::new(),
+                   cost: 0,
+                   fatigued: true,
+               };
     }
 }
 
 impl fmt::Display for Card {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}, {}, {}, {}", self.name, self.health, self.attack, self.cost)
+        write!(f,
+               "{}, {}, {}, {}",
+               self.name,
+               self.health,
+               self.attack,
+               self.cost)
     }
 }
 impl Card {
@@ -70,10 +75,9 @@ impl Card {
         loop {
             //make sure that you dont get more levels than you can handle
             println!("self.level = {}", self.level);
-            if self.exp > (self.level * 125 + 100 ) && self.level < 5 {
+            if self.exp > (self.level * 125 + 100) && self.level < 5 {
                 level_up(self, &deck);
-            }
-            else {
+            } else {
                 break;
                 //TODO: figure out what do do with extra exp
                 //the deck might get a slot for extra exp that is awarded on player.de_init()
@@ -104,17 +108,15 @@ impl Card {
 
 #[derive(Debug, Clone,Serialize, Deserialize)]
 pub struct AbilityRaw {
-
     pub target: String,
     pub effect: String,
-
 }
-impl Default for AbilityRaw{
+impl Default for AbilityRaw {
     fn default() -> AbilityRaw {
-        return AbilityRaw{
-            target: "".to_owned(),
-            effect: "".to_owned(),
-        };
+        return AbilityRaw {
+                   target: "".to_owned(),
+                   effect: "".to_owned(),
+               };
     }
 }
 
@@ -129,13 +131,19 @@ impl fmt::Display for AbilityRaw {
 pub struct Ability {
     pub name: String,
     pub level_requirement: i32,
-    pub all_pick : String,
+    pub all_pick: String,
     pub ability_raws: Vec<AbilityRaw>,
     pub trigger: String,
 }
 impl Default for Ability {
     fn default() -> Ability {
-        return Ability{ name: "ability_1".to_string(), level_requirement: 0, all_pick: "all".to_owned(), ability_raws: Vec::new(), trigger: "on_play".to_owned()};
+        return Ability {
+                   name: "ability_1".to_string(),
+                   level_requirement: 0,
+                   all_pick: "all".to_owned(),
+                   ability_raws: Vec::new(),
+                   trigger: "on_play".to_owned(),
+               };
 
     }
 }
@@ -156,16 +164,20 @@ pub struct CardClass {
 
 impl Default for CardClass {
     fn default() -> CardClass {
-        return CardClass{ 
-            name: "Default".to_string(),
-            ability_list: Vec::new(),
-            init_health: 0,
-            init_attack: 0,
-            init_stats: vec![vec![0]],
-            init_points: vec![vec![0]],
-            level_stats: vec![vec![1,1], vec![2,1], vec![3,1], vec![4,1], vec![5,1]],
-            level_points: vec![vec![1,33,33,33], vec![2,33,33,33], vec![3,33,33,33], vec![4,33,33,33], vec![5,33,33,33]],
-        };
+        return CardClass {
+                   name: "Default".to_string(),
+                   ability_list: Vec::new(),
+                   init_health: 0,
+                   init_attack: 0,
+                   init_stats: vec![vec![0]],
+                   init_points: vec![vec![0]],
+                   level_stats: vec![vec![1, 1], vec![2, 1], vec![3, 1], vec![4, 1], vec![5, 1]],
+                   level_points: vec![vec![1, 33, 33, 33],
+                                      vec![2, 33, 33, 33],
+                                      vec![3, 33, 33, 33],
+                                      vec![4, 33, 33, 33],
+                                      vec![5, 33, 33, 33]],
+               };
     }
 }
 
@@ -186,17 +198,25 @@ pub struct Player {
     pub health: i32,
     pub id: i32,
     pub mana: i32,
-
 }
 impl Default for Player {
     fn default() -> Player {
-        return Player{ name: "default".to_owned(), deck: Deck::default(), field: Vec::new(), hand: Vec::new(), graveyard: Vec::new(), health: 0, id: 0, mana: 0 };    
+        return Player {
+                   name: "default".to_owned(),
+                   deck: Deck::default(),
+                   field: Vec::new(),
+                   hand: Vec::new(),
+                   graveyard: Vec::new(),
+                   health: 0,
+                   id: 0,
+                   mana: 0,
+               };
     }
 }
 
 impl Player {
     // Allows player to save deck
-    pub fn de_init(&mut self){
+    pub fn de_init(&mut self) {
         //move all cards back to the deck and save deck
         self.deck.cards.extend_from_slice(&self.field);
         self.deck.cards.extend_from_slice(&self.graveyard);
@@ -227,7 +247,16 @@ pub fn create_player(name: String, deck: Deck) -> Player {
     let field = Vec::new();
     let graveyard = Vec::new();
     let health: i32 = 30;
-    let player = Player { name: name, id: 0, health: health, deck: deck, hand: hand, field: field, graveyard: graveyard, mana:0};
+    let player = Player {
+        name: name,
+        id: 0,
+        health: health,
+        deck: deck,
+        hand: hand,
+        field: field,
+        graveyard: graveyard,
+        mana: 0,
+    };
     return player;
 }
 
@@ -243,28 +272,32 @@ pub fn create_player(name: String, deck: Deck) -> Player {
    }
    */
 
+
+
+
+
 /* The deck section */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Deck {
     pub name_of_deck: String,
     pub cards: Vec<Card>,
     pub card_classes: Vec<CardClass>,
-    pub biggest_id: i32, 
-
+    pub biggest_id: i32,
 }
 
 impl Default for Deck {
-    fn default()  -> Deck{
-        return Deck{
-            name_of_deck: "default".to_owned(),
-            cards: Vec::new(),
-            card_classes: Vec::new(),
-            biggest_id: 0};
+    fn default() -> Deck {
+        return Deck {
+                   name_of_deck: "default".to_owned(),
+                   cards: Vec::new(),
+                   card_classes: Vec::new(),
+                   biggest_id: 0,
+               };
     }
 }
 
 impl Deck {
-    pub fn init(&mut self){
+    pub fn init(&mut self) {
         for i in &mut self.cards {
             i.init();
         }
@@ -301,7 +334,7 @@ fn read_card_class<P: AsRef<Path>>(path: P) -> Result<Vec<CardClass>, Box<Error>
 
 
 
-pub fn create_card<'a>(deck: &'a mut  Deck) -> Card {
+pub fn create_card<'a>(deck: &'a mut Deck) -> Card {
 
     //Pick a random class
     let class_i = rand::thread_rng().gen_range(0, deck.card_classes.len());
@@ -312,7 +345,7 @@ pub fn create_card<'a>(deck: &'a mut  Deck) -> Card {
     deck.biggest_id += 1;
     card.id = deck.biggest_id.clone();
 
-    card.name = format!("Level 0 {}", class.name); 
+    card.name = format!("Level 0 {}", class.name);
     card.max_health = class.init_health;
     card.max_attack = class.init_attack;
     card.level = 0;
@@ -320,7 +353,7 @@ pub fn create_card<'a>(deck: &'a mut  Deck) -> Card {
     card.class_name = class.name.clone();
 
     //get mana cost
-    //What this is doing is looking at a 2d vec to try and figure what mana 
+    //What this is doing is looking at a 2d vec to try and figure what mana
     //cost to give to the card
     //
     //it uses class.init_points which can look something like this
@@ -338,18 +371,17 @@ pub fn create_card<'a>(deck: &'a mut  Deck) -> Card {
     //
     // Once it gets a random int 1-100 it will try the first one, in this case 25%.
     // if the number is 1-25% it will be a card with mana cost 1,
-    // if it isnt in that range it will at 25 to "last" and see if the next one is 
+    // if it isnt in that range it will at 25 to "last" and see if the next one is
     // in between last and the next range + last
 
     //Get card mana cost
     let mut last: i32 = 1;
     let value = rand::thread_rng().gen_range(1, 100);
-    for i in 0..class.init_points.len()  {
-        if value < class.init_stats[i][1] + last -1|| value == class.init_stats[i][1] + last -1{
+    for i in 0..class.init_points.len() {
+        if value < class.init_stats[i][1] + last - 1 || value == class.init_stats[i][1] + last - 1 {
             card.cost = (i + 1) as i32;
             break;
-        }
-        else {
+        } else {
             last += class.init_stats[i][1];
         }
     }
@@ -378,11 +410,10 @@ pub fn create_card<'a>(deck: &'a mut  Deck) -> Card {
                 println!("adding an ability");
             }
             //add attack
-            else if value < points[1] + points[2]  {
+            else if value < points[1] + points[2] {
                 card.max_attack += 1;
                 println!("adding an attack point");
-            }
-            else if value < points[1] + points[2] + points[3] {
+            } else if value < points[1] + points[2] + points[3] {
                 card.max_health += 1;
                 println!("adding a health point");
             }
@@ -396,7 +427,10 @@ pub fn create_card<'a>(deck: &'a mut  Deck) -> Card {
 
 pub fn level_up<'a>(mut card: &'a mut Card, deck: &'a Deck) {
 
-    println!("Leveling up {} with id {} its level {}", card.name, card.id, card.level);
+    println!("Leveling up {} with id {} its level {}",
+             card.name,
+             card.id,
+             card.level);
     //For each level
     //for each stat point gained that level
     //find out which class this card belongs to
@@ -412,7 +446,7 @@ pub fn level_up<'a>(mut card: &'a mut Card, deck: &'a Deck) {
     let class = &deck.card_classes[class_index];
 
     //How many levels to assign
-    for _ in 1..class.level_stats[card.level as usize -1][1] {
+    for _ in 1..class.level_stats[card.level as usize - 1][1] {
         let value = rand::thread_rng().gen_range(0, 100);
 
         //Here we will figure out which we want
@@ -427,11 +461,10 @@ pub fn level_up<'a>(mut card: &'a mut Card, deck: &'a Deck) {
             println!("adding an ability");
         }
         //add attack
-        else if value < points[1] + points[2] + 1  {
+        else if value < points[1] + points[2] + 1 {
             card.max_attack += 1;
             println!("adding an attack point");
-        }
-        else if value < points[1] + points[2] + points[3] + 1 {
+        } else if value < points[1] + points[2] + points[3] + 1 {
             card.max_health += 1;
             println!("adding a health point");
         }
@@ -445,7 +478,10 @@ fn add_ability<'a>(card: &'a mut Card, class: &'a CardClass) {
 
     for _ in 0..class.ability_list.len() {
         //pick a random ability
-        let value = rand::thread_rng().choose(&class.ability_list).unwrap().clone();
+        let value = rand::thread_rng()
+            .choose(&class.ability_list)
+            .unwrap()
+            .clone();
         //if level_requirement doesnt disqualify the ability
         if value.level_requirement < card.level + 1 {
             card.abilities.push(value);
@@ -456,7 +492,7 @@ fn add_ability<'a>(card: &'a mut Card, class: &'a CardClass) {
 
 
 //TODO: investigate this with 0 cards and 0 exp
-pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> Deck{
+pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> Deck {
     //Generate up some cards
     let mut card_vec: Vec<Card> = Vec::new();
 
@@ -470,16 +506,17 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
     //Check that it seems good
     if input.is_ok() {
         println!("input is good");
-    }
-
-
-    else {
+    } else {
         println!("Could not interpret abilities file");
 
     }
 
     let classes: Vec<CardClass> = input.unwrap();
-    let mut deck = Deck{ name_of_deck: "thing".to_owned(), card_classes: classes.clone(), ..Deck::default()};
+    let mut deck = Deck {
+        name_of_deck: "thing".to_owned(),
+        card_classes: classes.clone(),
+        ..Deck::default()
+    };
 
     deck.name_of_deck = deck_name;
 
@@ -488,7 +525,7 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
     }
     deck.cards = card_vec;
 
-    // Grant cards a few levels 
+    // Grant cards a few levels
     // This part will grant levels 1-5 to some of your cards untill you
     // run out of experience to give
     while exp_to_grant > 0 {
@@ -500,20 +537,19 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
         //figure out how many levels to give it
         let mut to_give = 0;
         if exp_to_grant > 600 {
-            match rand::thread_rng().gen_range(1,5) {
+            match rand::thread_rng().gen_range(1, 5) {
                 1 => to_give = 100,
                 2 => to_give = 225,
                 3 => to_give = 350,
                 4 => to_give = 475,
                 5 => to_give = 600,
-                _ => {},
+                _ => {}
             };
             //TODO: for some reason it wont let me borrow deck as imutable, ill fix later
             //for now i just clone deck to d and send that
             let d = deck.clone();
             deck.cards[which_card].give_exp(to_give, &d);
-        }
-        else {
+        } else {
             to_give = exp_to_grant;
         }
         exp_to_grant = exp_to_grant - to_give;
@@ -527,8 +563,8 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
 mod tests {
     use board::*;
 
-    #[test] 
-    fn test_give_exp(){
+    #[test]
+    fn test_give_exp() {
         let mut deck = Deck::default();
         let mut card = Card::default();
         let mut class = CardClass::default();
@@ -540,7 +576,7 @@ mod tests {
         let x: i32 = 1000;
         card.give_exp(x, &deck);
 
-        assert!( card.level == 5);
+        assert!(card.level == 5);
 
     }
     #[test]
