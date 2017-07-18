@@ -1,4 +1,4 @@
 language: rust
 rust:
-    - stable
-script: cd common && cargo test
+    - nightyly
+script: cd server && cargo test
