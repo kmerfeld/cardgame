@@ -310,8 +310,14 @@ impl Deck {
 
         }
     }
+
+    pub fn to_string(&self) -> String{
+        serde_json::to_string(&self).unwrap()
+    }
+
     pub fn save_to_file(&self) {
-        let mut file = File::create(&self.name_of_deck).unwrap();
+        let name = format!("{}.deck", &self.name_of_deck);
+        let mut file = File::create(name).unwrap();
         let j = serde_json::to_string(&self).unwrap();
         file.write_all(j.as_bytes()).unwrap();
     }
@@ -392,7 +398,6 @@ pub fn create_card<'a>(deck: &'a mut Deck) -> Card {
     }
     //Use up points
     //Get the total amount of points we will award
-    println!("card cost = {}", card.cost);
 
 
     //For each level
@@ -407,15 +412,12 @@ pub fn create_card<'a>(deck: &'a mut Deck) -> Card {
             //add ability
             if value < points[1] {
                 add_ability(&mut card, &class);
-                println!("adding an ability");
             }
             //add attack
             else if value < points[1] + points[2] {
                 card.max_attack += 1;
-                println!("adding an attack point");
             } else if value < points[1] + points[2] + points[3] {
                 card.max_health += 1;
-                println!("adding a health point");
             }
         }
     }
