@@ -1,4 +1,7 @@
 language: rust
 rust:
     - nightyly
-script: cd server && cargo test
+script: 
+    - cd server && cargo test
+    - cd board && cargo test
+    - cd client && cargo test

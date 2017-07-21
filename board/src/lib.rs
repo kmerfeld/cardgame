@@ -1,7 +1,12 @@
+#[macro_use] extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 extern crate serde_yaml;
 extern crate rand;
+
+use std::sync::mpsc::channel;
+use std::sync::mpsc::{Sender, Receiver};
+use std::thread;
 
 use std::error::Error;
 use std::path::Path;
@@ -33,21 +38,21 @@ pub struct Card {
 impl Default for Card {
     fn default() -> Card {
         return Card {
-                   name: "Default".to_string(),
-                   id: 0,
-                   max_health: 0,
-                   max_attack: 0,
-                   health: 0,
-                   attack: 0,
-                   level: 0,
-                   exp: 0,
-                   durability: 0,
-                   class_name: "Default".to_owned(),
-                   abilities: Vec::new(),
-                   tmp_abilities: Vec::new(),
-                   cost: 0,
-                   fatigued: true,
-               };
+            name: "Default".to_string(),
+            id: 0,
+            max_health: 0,
+            max_attack: 0,
+            health: 0,
+            attack: 0,
+            level: 0,
+            exp: 0,
+            durability: 0,
+            class_name: "Default".to_owned(),
+            abilities: Vec::new(),
+            tmp_abilities: Vec::new(),
+            cost: 0,
+            fatigued: true,
+        };
     }
 }
 
@@ -114,9 +119,9 @@ pub struct AbilityRaw {
 impl Default for AbilityRaw {
     fn default() -> AbilityRaw {
         return AbilityRaw {
-                   target: "".to_owned(),
-                   effect: "".to_owned(),
-               };
+            target: "".to_owned(),
+            effect: "".to_owned(),
+        };
     }
 }
 
@@ -138,12 +143,12 @@ pub struct Ability {
 impl Default for Ability {
     fn default() -> Ability {
         return Ability {
-                   name: "ability_1".to_string(),
-                   level_requirement: 0,
-                   all_pick: "all".to_owned(),
-                   ability_raws: Vec::new(),
-                   trigger: "on_play".to_owned(),
-               };
+            name: "ability_1".to_string(),
+            level_requirement: 0,
+            all_pick: "all".to_owned(),
+            ability_raws: Vec::new(),
+            trigger: "on_play".to_owned(),
+        };
 
     }
 }
@@ -165,19 +170,19 @@ pub struct CardClass {
 impl Default for CardClass {
     fn default() -> CardClass {
         return CardClass {
-                   name: "Default".to_string(),
-                   ability_list: Vec::new(),
-                   init_health: 0,
-                   init_attack: 0,
-                   init_stats: vec![vec![0]],
-                   init_points: vec![vec![0]],
-                   level_stats: vec![vec![1, 1], vec![2, 1], vec![3, 1], vec![4, 1], vec![5, 1]],
-                   level_points: vec![vec![1, 33, 33, 33],
-                                      vec![2, 33, 33, 33],
-                                      vec![3, 33, 33, 33],
-                                      vec![4, 33, 33, 33],
-                                      vec![5, 33, 33, 33]],
-               };
+            name: "Default".to_string(),
+            ability_list: Vec::new(),
+            init_health: 0,
+            init_attack: 0,
+            init_stats: vec![vec![0]],
+            init_points: vec![vec![0]],
+            level_stats: vec![vec![1, 1], vec![2, 1], vec![3, 1], vec![4, 1], vec![5, 1]],
+            level_points: vec![vec![1, 33, 33, 33],
+            vec![2, 33, 33, 33],
+            vec![3, 33, 33, 33],
+            vec![4, 33, 33, 33],
+            vec![5, 33, 33, 33]],
+        };
     }
 }
 
@@ -198,19 +203,21 @@ pub struct Player {
     pub health: i32,
     pub id: i32,
     pub mana: i32,
+
 }
+
 impl Default for Player {
     fn default() -> Player {
         return Player {
-                   name: "default".to_owned(),
-                   deck: Deck::default(),
-                   field: Vec::new(),
-                   hand: Vec::new(),
-                   graveyard: Vec::new(),
-                   health: 0,
-                   id: 0,
-                   mana: 0,
-               };
+            name: "default".to_owned(),
+            deck: Deck::default(),
+            field: Vec::new(),
+            hand: Vec::new(),
+            graveyard: Vec::new(),
+            health: 0,
+            id: 0,
+            mana: 0,
+        };
     }
 }
 
@@ -260,21 +267,6 @@ pub fn create_player(name: String, deck: Deck) -> Player {
     return player;
 }
 
-// The actions that the players do
-// These go "player" does "action" to "target".
-// The board then decides what happens
-/*
-   pub struct Event {
-   caster: Player, //ex: "player1"
-   action: String, //ex: "Destroy"
-   target: i32,   //ex: "<target id>
-   text: String,   //ex: "Destroy target entity
-   }
-   */
-
-
-
-
 
 /* The deck section */
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -288,11 +280,11 @@ pub struct Deck {
 impl Default for Deck {
     fn default() -> Deck {
         return Deck {
-                   name_of_deck: "default".to_owned(),
-                   cards: Vec::new(),
-                   card_classes: Vec::new(),
-                   biggest_id: 0,
-               };
+            name_of_deck: "default".to_owned(),
+            cards: Vec::new(),
+            card_classes: Vec::new(),
+            biggest_id: 0,
+        };
     }
 }
 
@@ -324,8 +316,9 @@ impl Deck {
 }
 
 //TODO: use generic to fuse these two functions
-pub fn read_deck_from_file<P: AsRef<Path>>(path: P) -> Result<Deck, Box<Error>> {
-    let file = File::open(path)?;
+pub fn read_deck_from_file(input: String) -> Result<Deck, Box<Error>> {
+    let p = format!("{}.deck", input);
+    let file = File::open(p)?;
     let u: Deck = serde_json::from_reader(file)?;
     Ok(u)
 }
@@ -601,6 +594,4 @@ mod tests {
 
         assert!(card.level == 5);
     }
-
-
 }

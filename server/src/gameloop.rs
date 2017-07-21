@@ -3,12 +3,16 @@
 extern crate rand;
 use rand::{Rng, thread_rng};
 use std::io::{self, BufRead};
+use cardgame_board::*;
 
-use board::*;
 use action::*;
+use std::sync::mpsc::channel;
+use std::sync::mpsc::{Sender, Receiver};
 
+use std::thread;
 
-pub fn gameloop(mut player_1: Player, mut player_2: Player) {
+pub fn gameloop(mut player_1: Player, mut player_2: Player, send_1: Sender<String>, recv_1: Receiver<String>, send_2: Sender<String>, recv_2: Receiver<String>) {
+
     //We clone these cards so we will keep the originals
     //at the end for persistance
 
@@ -41,8 +45,13 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
         draw_card(&mut player_2);
     }
 
+    let mut curr_sender = &send_1;
+    let mut curr_recv = &recv_1;
+
     player_1.print();
     player_2.print();
+
+    /* Start game */
     while game_is_going {
         //Define who is who
         let mut current_player;
@@ -50,9 +59,15 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
         if turn == true {
             current_player = &mut player_1;
             other_player = &mut player_2;
+            curr_sender = &send_1;
+            curr_recv = &recv_1;
+
         } else {
             current_player = &mut player_2;
             other_player = &mut player_1;
+            curr_sender = &send_2;
+            curr_recv = &recv_2;
+
         }
         println!("\n#### This player's turn {}", current_player.name);
 
@@ -74,7 +89,9 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
             trigger_ability("on_turn_start".to_owned(),
                             &i.id,
                             &mut current_player,
-                            &mut other_player);
+                            &mut other_player,
+                            &curr_sender,
+                            &curr_recv);
         }
 
         let mut doing_things: bool = true;
@@ -104,7 +121,9 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
                 trigger_ability("on_play".to_owned(),
                                 &id,
                                 &mut current_player,
-                                &mut other_player);
+                                &mut other_player,
+                                &curr_sender,
+                                &curr_recv);
             } else if split[0] == "attack" {
                 //This should all be moved to the board section
                 //Make sure enough arguments were supplied
@@ -118,7 +137,7 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
                 }
             } else if split[0] == "attack_face" {
                 let mut id: i32 = split[1].parse().unwrap();
-                attack_face(&mut id, &mut other_player, &mut current_player);
+                attack_face(&mut id, &mut other_player, &mut current_player, &curr_sender, &curr_recv);
 
 
             } else if split[0] == "win" {
@@ -139,7 +158,9 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
             trigger_ability("on_turn_start".to_owned(),
                             &i.id,
                             &mut current_player,
-                            &mut other_player);
+                            &mut other_player,
+                            &curr_sender,
+                            &curr_recv);
         }
 
         if turn == false {
