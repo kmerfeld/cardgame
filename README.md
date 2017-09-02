@@ -16,7 +16,11 @@ cargo build
 
 ## todo:
 Here is what I am planning on working on 
+
     - [ ] networking
+
     - [ ] client
+
     - [ ] tournament mode
+
     - [ ] gameplay
