@@ -9,7 +9,14 @@ in a tournament setting.
 
 Run the following to test 
 ```bash
-cd common
+cd server
 cargo build
-./target/debug/cardgame client
+./target/debug/server
 ```
+
+## todo:
+Here is what I am planning on working on 
+    - [ ] networking
+    - [ ] client
+    - [ ] tournament mode
+    - [ ] gameplay
