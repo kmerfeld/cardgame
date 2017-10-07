@@ -11,7 +11,14 @@ use std::sync::mpsc::{Sender, Receiver};
 
 use std::thread;
 
-pub fn gameloop(mut player_1: Player, mut player_2: Player, send_1: Sender<String>, recv_1: Receiver<String>, send_2: Sender<String>, recv_2: Receiver<String>) {
+pub fn gameloop(
+    mut player_1: Player,
+    mut player_2: Player,
+    send_1: Sender<String>,
+    recv_1: Receiver<String>,
+    send_2: Sender<String>,
+    recv_2: Receiver<String>,
+) {
 
     //We clone these cards so we will keep the originals
     //at the end for persistance
@@ -86,12 +93,14 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player, send_1: Sender<Strin
             i.fatigued = false;
         }
         for i in current_player.field.clone() {
-            trigger_ability("on_turn_start".to_owned(),
-                            &i.id,
-                            &mut current_player,
-                            &mut other_player,
-                            &curr_sender,
-                            &curr_recv);
+            trigger_ability(
+                "on_turn_start".to_owned(),
+                &i.id,
+                &mut current_player,
+                &mut other_player,
+                &curr_sender,
+                &curr_recv,
+            );
         }
 
         let mut doing_things: bool = true;
@@ -101,34 +110,41 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player, send_1: Sender<Strin
             //The options are "play", "attack", "look", and "help"
             let mut line = String::new();
             let stdin = io::stdin();
-            stdin
-                .lock()
-                .read_line(&mut line)
-                .expect("Could not read line");
+            stdin.lock().read_line(&mut line).expect(
+                "Could not read line",
+            );
 
             let split = line.split_whitespace();
             let split: Vec<&str> = split.collect();
 
             if split.is_empty() {
-                println!("enter a command, valid commands are \"play\", \"attack\", \"look\", and \"help\"");
+                println!(
+                    "enter a command, valid commands are \"play\", \"attack\", \"look\", and \"help\""
+                );
             } else if split[0] == "play" {
                 let id: i32 = split[1].parse().unwrap();
-                play_card(&id,
-                          &mut current_player.hand,
-                          &mut current_player.field,
-                          &current_player.deck,
-                          &mut current_player.mana);
-                trigger_ability("on_play".to_owned(),
-                                &id,
-                                &mut current_player,
-                                &mut other_player,
-                                &curr_sender,
-                                &curr_recv);
+                play_card(
+                    &id,
+                    &mut current_player.hand,
+                    &mut current_player.field,
+                    &current_player.deck,
+                    &mut current_player.mana,
+                );
+                trigger_ability(
+                    "on_play".to_owned(),
+                    &id,
+                    &mut current_player,
+                    &mut other_player,
+                    &curr_sender,
+                    &curr_recv,
+                );
             } else if split[0] == "attack" {
                 //This should all be moved to the board section
                 //Make sure enough arguments were supplied
                 if split.len() < 3 {
-                    println!("not enough arguments, try \"attack your_monster enemy\" to attack opponent, use 999");
+                    println!(
+                        "not enough arguments, try \"attack your_monster enemy\" to attack opponent, use 999"
+                    );
                 } else {
                     let attacker: i32 = split[1].parse().unwrap();
                     let target: i32 = split[2].parse().unwrap();
@@ -137,7 +153,13 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player, send_1: Sender<Strin
                 }
             } else if split[0] == "attack_face" {
                 let mut id: i32 = split[1].parse().unwrap();
-                attack_face(&mut id, &mut other_player, &mut current_player, &curr_sender, &curr_recv);
+                attack_face(
+                    &mut id,
+                    &mut other_player,
+                    &mut current_player,
+                    &curr_sender,
+                    &curr_recv,
+                );
 
 
             } else if split[0] == "win" {
@@ -149,18 +171,22 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player, send_1: Sender<Strin
             } else if split[0] == "end" {
                 doing_things = false;
             } else {
-                println!("enter a command, valid commands are \"play\", \"attack\", \"look\", and \"help\"");
+                println!(
+                    "enter a command, valid commands are \"play\", \"attack\", \"look\", and \"help\""
+                );
             }
 
         }
 
         for i in current_player.field.clone() {
-            trigger_ability("on_turn_start".to_owned(),
-                            &i.id,
-                            &mut current_player,
-                            &mut other_player,
-                            &curr_sender,
-                            &curr_recv);
+            trigger_ability(
+                "on_turn_start".to_owned(),
+                &i.id,
+                &mut current_player,
+                &mut other_player,
+                &curr_sender,
+                &curr_recv,
+            );
         }
 
         if turn == false {
