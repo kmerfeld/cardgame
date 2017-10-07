@@ -1,4 +1,5 @@
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 extern crate serde_yaml;
@@ -58,12 +59,14 @@ impl Default for Card {
 
 impl fmt::Display for Card {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
-               "{}, {}, {}, {}",
-               self.name,
-               self.health,
-               self.attack,
-               self.cost)
+        write!(
+            f,
+            "{}, {}, {}, {}",
+            self.name,
+            self.health,
+            self.attack,
+            self.cost
+        )
     }
 }
 impl Card {
@@ -90,17 +93,19 @@ impl Card {
         }
     }
     pub fn pretty_print(&self) {
-        println!("[name:{}] | [class:{}] | [id:{}] | [health:{}] | [attack:{}] | [level:{}] | [exp:{}] | [cost:{}] | [fatigued:{}] | [dura:{}]",
-                 &self.name,
-                 &self.class_name,
-                 &self.id,
-                 &self.health,
-                 &self.attack,
-                 &self.level,
-                 &self.exp,
-                 &self.cost,
-                 &self.fatigued,
-                 &self.durability);
+        println!(
+            "[name:{}] | [class:{}] | [id:{}] | [health:{}] | [attack:{}] | [level:{}] | [exp:{}] | [cost:{}] | [fatigued:{}] | [dura:{}]",
+            &self.name,
+            &self.class_name,
+            &self.id,
+            &self.health,
+            &self.attack,
+            &self.level,
+            &self.exp,
+            &self.cost,
+            &self.fatigued,
+            &self.durability
+        );
 
         for i in &self.abilities {
             println!("\tName: {} Trigger: {}", i.name, i.trigger);
@@ -111,7 +116,9 @@ impl Card {
 
 
 
-#[derive(Debug, Clone,Serialize, Deserialize)]
+///An AbilityRaw is what a part of an ability that contains the effect.
+///Each AbilityRaw contains what it does. and who it does it to
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AbilityRaw {
     pub target: String,
     pub effect: String,
@@ -132,7 +139,10 @@ impl fmt::Display for AbilityRaw {
     }
 }
 
-#[derive(Debug, Clone,Serialize, Deserialize)]
+///Each ability has a name, minimum level needed to gain this ability, a list of
+///AbilityRaws (executed sequentially) and the condition for when an ability
+///is triggered
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Ability {
     pub name: String,
     pub level_requirement: i32,
@@ -154,6 +164,8 @@ impl Default for Ability {
 }
 
 
+///A CardClass is The blueprint for how cards are generated.
+///They are defined in the abilities.yaml file
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CardClass {
     pub name: String,
@@ -177,11 +189,13 @@ impl Default for CardClass {
             init_stats: vec![vec![0]],
             init_points: vec![vec![0]],
             level_stats: vec![vec![1, 1], vec![2, 1], vec![3, 1], vec![4, 1], vec![5, 1]],
-            level_points: vec![vec![1, 33, 33, 33],
-            vec![2, 33, 33, 33],
-            vec![3, 33, 33, 33],
-            vec![4, 33, 33, 33],
-            vec![5, 33, 33, 33]],
+            level_points: vec![
+                vec![1, 33, 33, 33],
+                vec![2, 33, 33, 33],
+                vec![3, 33, 33, 33],
+                vec![4, 33, 33, 33],
+                vec![5, 33, 33, 33],
+            ],
         };
     }
 }
@@ -193,6 +207,7 @@ impl fmt::Display for CardClass {
 }
 
 /*  The player section */
+///Players Are the structure that represents the human (or bot) player.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Player {
     pub name: String,
@@ -203,7 +218,6 @@ pub struct Player {
     pub health: i32,
     pub id: i32,
     pub mana: i32,
-
 }
 
 impl Default for Player {
@@ -249,6 +263,7 @@ impl Player {
     }
 }
 
+///Creates a player structure
 pub fn create_player(name: String, deck: Deck) -> Player {
     let hand = Vec::new();
     let field = Vec::new();
@@ -269,6 +284,9 @@ pub fn create_player(name: String, deck: Deck) -> Player {
 
 
 /* The deck section */
+///Decks contain a player's cards and the CardClasses allowed in it.
+///This way you could take your deck generated with one abilities.yaml and
+///play it against a different abilities.yaml
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Deck {
     pub name_of_deck: String,
@@ -303,7 +321,7 @@ impl Deck {
         }
     }
 
-    pub fn to_string(&self) -> String{
+    pub fn to_string(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
 
@@ -333,6 +351,7 @@ fn read_card_class<P: AsRef<Path>>(path: P) -> Result<Vec<CardClass>, Box<Error>
 
 
 
+///Generate a Card
 pub fn create_card<'a>(deck: &'a mut Deck) -> Card {
 
     //Pick a random class
@@ -420,12 +439,15 @@ pub fn create_card<'a>(deck: &'a mut Deck) -> Card {
     return card;
 }
 
+///Level up a card
 pub fn level_up<'a>(mut card: &'a mut Card, deck: &'a Deck) {
 
-    println!("Leveling up {} with id {} its level {}",
-             card.name,
-             card.id,
-             card.level);
+    println!(
+        "Leveling up {} with id {} its level {}",
+        card.name,
+        card.id,
+        card.level
+    );
     //For each level
     //for each stat point gained that level
     //find out which class this card belongs to
@@ -467,6 +489,7 @@ pub fn level_up<'a>(mut card: &'a mut Card, deck: &'a Deck) {
 }
 
 
+///Give a card an ability.
 fn add_ability<'a>(card: &'a mut Card, class: &'a CardClass) {
     //we check a maximum of all the cards
     println!("getting an ability");
@@ -487,6 +510,7 @@ fn add_ability<'a>(card: &'a mut Card, class: &'a CardClass) {
 
 
 //TODO: investigate this with 0 cards and 0 exp
+///Create an empty deck
 pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> Deck {
     //Generate up some cards
     let mut card_vec: Vec<Card> = Vec::new();
