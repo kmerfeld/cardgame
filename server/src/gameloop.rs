@@ -6,19 +6,8 @@ use std::io::{self, BufRead};
 use cardgame_board::*;
 
 use action::*;
-use std::sync::mpsc::channel;
-use std::sync::mpsc::{Sender, Receiver};
 
-use std::thread;
-
-pub fn gameloop(
-    mut player_1: Player,
-    mut player_2: Player,
-    send_1: Sender<String>,
-    recv_1: Receiver<String>,
-    send_2: Sender<String>,
-    recv_2: Receiver<String>,
-) {
+pub fn gameloop(mut player_1: Player, mut player_2: Player) {
 
     //We clone these cards so we will keep the originals
     //at the end for persistance
@@ -52,9 +41,6 @@ pub fn gameloop(
         draw_card(&mut player_2);
     }
 
-    let mut curr_sender = &send_1;
-    let mut curr_recv = &recv_1;
-
     player_1.print();
     player_2.print();
 
@@ -66,14 +52,10 @@ pub fn gameloop(
         if turn == true {
             current_player = &mut player_1;
             other_player = &mut player_2;
-            curr_sender = &send_1;
-            curr_recv = &recv_1;
 
         } else {
             current_player = &mut player_2;
             other_player = &mut player_1;
-            curr_sender = &send_2;
-            curr_recv = &recv_2;
 
         }
         println!("\n#### This player's turn {}", current_player.name);
@@ -98,8 +80,6 @@ pub fn gameloop(
                 &i.id,
                 &mut current_player,
                 &mut other_player,
-                &curr_sender,
-                &curr_recv,
             );
         }
 
@@ -135,8 +115,6 @@ pub fn gameloop(
                     &id,
                     &mut current_player,
                     &mut other_player,
-                    &curr_sender,
-                    &curr_recv,
                 );
             } else if split[0] == "attack" {
                 //This should all be moved to the board section
@@ -153,13 +131,7 @@ pub fn gameloop(
                 }
             } else if split[0] == "attack_face" {
                 let mut id: i32 = split[1].parse().unwrap();
-                attack_face(
-                    &mut id,
-                    &mut other_player,
-                    &mut current_player,
-                    &curr_sender,
-                    &curr_recv,
-                );
+                attack_face(&mut id, &mut other_player, &mut current_player);
 
 
             } else if split[0] == "win" {
@@ -184,8 +156,6 @@ pub fn gameloop(
                 &i.id,
                 &mut current_player,
                 &mut other_player,
-                &curr_sender,
-                &curr_recv,
             );
         }
 

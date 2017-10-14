@@ -1,7 +1,7 @@
 use std::io::{self, BufRead};
 use cardgame_board::*;
-use std::sync::mpsc::{channel, Sender, Receiver};
 use std::thread;
+use cardgame_board::*;
 /* Modify board state */
 
 ///Allow a player to draw a card
@@ -72,13 +72,7 @@ pub fn move_card<'a>(
 
 
 /// Attack a player right in the face with one of your cards
-pub fn attack_face<'a>(
-    attacker: &'a i32,
-    mut target: &'a mut Player,
-    mut you: &'a mut Player,
-    send: &'a Sender<String>,
-    recv: &'a Receiver<String>,
-) {
+pub fn attack_face<'a>(attacker: &'a i32, mut target: &'a mut Player, mut you: &'a mut Player) {
     let mut index: i32 = -1;
     for i in 0..you.field.len() {
         if you.field[i].id == attacker.clone() {
@@ -94,8 +88,6 @@ pub fn attack_face<'a>(
             &index,
             &mut you,
             &mut target,
-            &send,
-            &recv,
         );
         target.health -= you.field[index as usize].attack;
     }
@@ -172,13 +164,17 @@ fn get_index<'a>(id: &'a i32, location: &'a Vec<Card>) -> Option<i32> {
 
 
 ///Interact with the player
-fn ask<'a>(message: String, send: &'a Sender<String>, recv: &'a Receiver<String>) -> String {
+///This might end up moved
+fn ask<'a>(message: String) -> String {
 
-    //Tell the input thread we are ready
-    send.send(message);
-    //Ask the home thread for input
-    let x = recv.recv().unwrap();
-    return x;
+    println!("{}", message);
+
+    let mut input = String::new();
+
+    io::stdin().read_line(&mut input).expect(
+        "Failed to read line",
+    );
+    return input;
 }
 
 
@@ -189,8 +185,6 @@ pub fn trigger_ability<'a>(
     id: &i32,
     mut caster: &'a mut Player,
     mut target_owner: &'a mut Player,
-    send: &'a Sender<String>,
-    recv: &'a Receiver<String>,
 ) {
 
     //Get a reference to the card
@@ -232,7 +226,7 @@ pub fn trigger_ability<'a>(
                             found_target = true;
                         } else {
                             //Figure out what card will be destroyed
-                            let input = ask("what monster do you want destroyed and what field (you/them) expecting \"20 them \"".to_owned(), &send, &recv);
+                            let input = ask("what monster do you want destroyed and what field (you/them) expecting \"20 them \"".to_owned());
                             println!("cancel to not use this ability");
                             let which: Vec<&str> = input.split_whitespace().collect();
 
@@ -265,8 +259,6 @@ pub fn trigger_ability<'a>(
                                                 &which[0].trim().parse::<i32>().unwrap(),
                                                 &mut caster,
                                                 &mut target_owner,
-                                                &send,
-                                                &recv,
                                             );
                                             found_target = true;
                                         }
@@ -295,8 +287,6 @@ pub fn trigger_ability<'a>(
                                                 &which[0].trim().parse::<i32>().unwrap(),
                                                 &mut target_owner,
                                                 &mut caster,
-                                                &send,
-                                                &recv,
                                             );
                                             found_target = true;
                                         }
@@ -331,8 +321,7 @@ pub fn trigger_ability<'a>(
 
                         }
                     } else if ability.target.contains("target_creature") {
-                        let tmp_id: String =
-                            ask("What id do you want to target".to_owned(), &send, &recv);
+                        let tmp_id: String = ask("What id do you want to target".to_owned());
                         let target_id = tmp_id.parse::<i32>();
 
                         if target_id.is_ok() {
@@ -361,8 +350,7 @@ pub fn trigger_ability<'a>(
                             }
                         }
                     } else if ability.target == "target_ally_creature" {
-                        let tmp_id: String =
-                            ask("What id do you want to target".to_owned(), &send, &recv);
+                        let tmp_id: String = ask("What id do you want to target".to_owned());
                         let target_id = tmp_id.parse::<i32>();
 
                         if target_id.is_ok() {
@@ -379,8 +367,7 @@ pub fn trigger_ability<'a>(
                             }
                         }
                     } else if ability.target == "target_enemy_creature" {
-                        let tmp_id: String =
-                            ask("What id do you want to target".to_owned(), send, recv);
+                        let tmp_id: String = ask("What id do you want to target".to_owned());
                         let target_id = tmp_id.parse::<i32>();
 
                         if target_id.is_ok() {
@@ -487,7 +474,7 @@ pub fn modify_stat<'a>(
 #[cfg(test)]
 mod tests {
     use action::*;
-    use board::*;
+    use cardgame_board::*;
 
     #[test]
     fn test_move_card() {
@@ -545,14 +532,7 @@ mod tests {
         p2.field.push(card1);
         p2.field.push(card2);
 
-        trigger_ability(
-            "on_play".to_owned(),
-            &card.id,
-            &mut p1,
-            &mut p2,
-            &send,
-            &recv,
-        );
+        trigger_ability("on_play".to_owned(), &card.id, &mut p1, &mut p2);
         assert!(p2.field[0].attack == 5);
         assert!(p2.field[1].attack == 5);
         assert!(p2.field[0].health == 5);
@@ -594,14 +574,7 @@ mod tests {
 
         p1.field.push(card.clone());
 
-        trigger_ability(
-            "on_play".to_owned(),
-            &card.id,
-            &mut p1,
-            &mut p2,
-            &send,
-            &recv,
-        );
+        trigger_ability("on_play".to_owned(), &card.id, &mut p1, &mut p2);
         assert!(p1.field[0].health == 5);
         assert!(p1.field[0].max_health == 5);
     }
