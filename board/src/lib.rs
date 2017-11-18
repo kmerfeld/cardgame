@@ -111,6 +111,10 @@ impl Card {
     }
 }
 
+///Placeholder event for now. Will be expanded to more easily show info
+pub struct Event{
+    pub msg: String,
+}
 
 
 ///An AbilityRaw is what a part of an ability that contains the effect.

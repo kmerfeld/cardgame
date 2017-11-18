@@ -137,19 +137,20 @@ pub fn attack<'a>(attacker: &'a i32,
     }
 }
 
-
+///Find the position of a card in a location from it's ID
+//TODO: Find a solution to do this cleaner, Unique IDs?
 fn get_index<'a>(id: &'a i32, location: &'a Vec<Card>) -> Option<i32> {
     let mut index = None;
     for i in 0..location.len() {
         if location[i].id == id.clone() {
             index = Some(i as i32)
-
         }
     }
     return index;
 }
 
 
+///Get info from the player
 fn ask<'a>(message: String, send: &'a Sender<String>, recv: &'a Receiver<String>) -> String {
 
     //Tell the input thread we are ready
@@ -159,6 +160,12 @@ fn ask<'a>(message: String, send: &'a Sender<String>, recv: &'a Receiver<String>
     //Ask the home thread for input
     let x = recv.recv().unwrap();
     return x;
+}
+
+///Give output to the player
+fn say<'a>(message: String, player: &'a Player) {
+    let out = player.send.send(message);
+    if !out.is_ok() { println!("Failed to send line, broken pipe"); }
 }
 
 
@@ -185,7 +192,7 @@ pub fn trigger_ability<'a>(trigger: String,
     for thing in card.clone().abilities {
 
         if thing.trigger == trigger {
-            println!("activating {}", thing.name);
+            say(format!("activating {}", thing.name), &caster); 
 
 
             for ability in thing.ability_raws {
