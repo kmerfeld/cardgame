@@ -6,10 +6,10 @@ use std::io::{self, BufRead};
 use cardgame_board::*;
 
 use action::*;
-use std::sync::mpsc::channel;
+//use std::sync::mpsc::channel;
 use std::sync::mpsc::{Sender, Receiver};
 
-use std::thread;
+//use std::thread;
 
 pub fn gameloop(mut player_1: Player, mut player_2: Player, send_1: Sender<String>, recv_1: Receiver<String>, send_2: Sender<String>, recv_2: Receiver<String>) {
 
@@ -89,9 +89,7 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player, send_1: Sender<Strin
             trigger_ability("on_turn_start".to_owned(),
                             &i.id,
                             &mut current_player,
-                            &mut other_player,
-                            &curr_sender,
-                            &curr_recv);
+                            &mut other_player);
         }
 
         let mut doing_things: bool = true;
@@ -121,9 +119,7 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player, send_1: Sender<Strin
                 trigger_ability("on_play".to_owned(),
                                 &id,
                                 &mut current_player,
-                                &mut other_player,
-                                &curr_sender,
-                                &curr_recv);
+                                &mut other_player);
             } else if split[0] == "attack" {
                 //This should all be moved to the board section
                 //Make sure enough arguments were supplied
@@ -137,7 +133,7 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player, send_1: Sender<Strin
                 }
             } else if split[0] == "attack_face" {
                 let mut id: i32 = split[1].parse().unwrap();
-                attack_face(&mut id, &mut other_player, &mut current_player, &curr_sender, &curr_recv);
+                attack_face(&mut id, &mut other_player, &mut current_player);
 
 
             } else if split[0] == "win" {
@@ -158,9 +154,7 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player, send_1: Sender<Strin
             trigger_ability("on_turn_start".to_owned(),
                             &i.id,
                             &mut current_player,
-                            &mut other_player,
-                            &curr_sender,
-                            &curr_recv);
+                            &mut other_player);
         }
 
         if turn == false {

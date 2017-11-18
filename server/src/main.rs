@@ -1,7 +1,8 @@
 extern crate rand; extern crate serde_json;
 extern crate serde_yaml;
 extern crate cardgame_board;
-#[macro_use] extern crate serde_derive;
+//#[macro_use] 
+extern crate serde_derive;
 
 mod gameloop;
 mod action;
@@ -19,8 +20,6 @@ fn main() {
     let (sender_p1_home, receiver_p1_home) = channel();
     let (sender_p2, receiver_p2) = channel();
     let (sender_p2_home, receiver_p2_home) = channel();
-
-
 
     thread::spawn(move || {
         let p1_deck = read_deck_from_file("p1.deck".to_owned());
@@ -48,6 +47,7 @@ fn main() {
 
         gameloop(p1, p2, sender_p1_home, receiver_p1, sender_p2_home, receiver_p2);
     });
+
 
 
     //Player 1 

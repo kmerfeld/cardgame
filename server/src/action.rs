@@ -1,7 +1,7 @@
-use std::io::{self, BufRead};
+//use std::io::{self, BufRead};
 use cardgame_board::*;
 use std::sync::mpsc::{channel, Sender, Receiver};
-use std::thread;
+//use std::thread;
 /* Modify board state */
 
 //Allow something to draw a card
@@ -64,7 +64,7 @@ pub fn move_card<'a>(id: &'a i32,
 
 
 // Attack a player right in the face with one of your cards
-pub fn attack_face<'a>(attacker: &'a i32, mut target: &'a mut Player, mut you: &'a mut Player, send: &'a Sender<String>,  recv: &'a Receiver<String>) {
+pub fn attack_face<'a>(attacker: &'a i32, mut target: &'a mut Player, mut you: &'a mut Player) {
     let mut index: i32 = -1;
     for i in 0..you.field.len() {
         if you.field[i].id == attacker.clone() {
@@ -76,11 +76,9 @@ pub fn attack_face<'a>(attacker: &'a i32, mut target: &'a mut Player, mut you: &
         println!("Monster doesnt exist");
     } else {
         trigger_ability("on_player_attacked".to_owned(),
-                        &index,
-                        &mut you,
-                        &mut target,
-                        &send,
-                        &recv);
+        &index,
+        &mut you,
+        &mut target);
         target.health -= you.field[index as usize].attack;
     }
 }
@@ -166,9 +164,8 @@ fn ask<'a>(message: String, send: &'a Sender<String>, recv: &'a Receiver<String>
 pub fn trigger_ability<'a>(trigger: String,
                            id: &i32,
                            mut caster: &'a mut Player,
-                           mut target_owner: &'a mut Player,
-                           send: &'a Sender<String>,
-                           recv: &'a Receiver<String>) {
+                           mut target_owner: &'a mut Player)
+{
 
     //Get a reference to the card
     let mut card: Card = Card::default();
@@ -209,7 +206,7 @@ pub fn trigger_ability<'a>(trigger: String,
                             found_target = true;
                         } else {
                             //Figure out what card will be destroyed
-                            let input = ask("what monster do you want destroyed and what field (you/them) expecting \"20 them \"".to_owned(), &send, &recv);
+                            let input = ask("what monster do you want destroyed and what field (you/them) expecting \"20 them \"".to_owned(), &caster.send, &caster.recv);
                             println!("cancel to not use this ability");
                             let which: Vec<&str> = input.split_whitespace().collect();
 
@@ -219,59 +216,55 @@ pub fn trigger_ability<'a>(trigger: String,
                             if which[1] == "you" || which[1] == "them" {
                                 //target creature on your side
                                 if which[1] == "you" &&
-                                   (ability.target == "target_creature" ||
-                                    ability.target == "target_ally_creature") {
+                                    (ability.target == "target_creature" ||
+                                     ability.target == "target_ally_creature") {
 
-                                    let index_c =
-                                        get_index(&which[0].trim().parse::<i32>().unwrap(),
-                                                  &caster.field);
+                                        let index_c =
+                                            get_index(&which[0].trim().parse::<i32>().unwrap(),
+                                            &caster.field);
 
-                                    if index_c.is_some() {
-                                        if ability.target == "target creature".to_owned() ||
-                                           ability.target == "ally creature".to_owned() {
-                                            move_card(&which[0].trim().parse::<i32>().unwrap(),
-                                                      &mut caster.field,
-                                                      &mut caster.graveyard);
-                                            trigger_ability("on_death".to_owned(),
-                                                            &which[0]
-                                                                 .trim()
-                                                                 .parse::<i32>()
-                                                                 .unwrap(),
-                                                            &mut caster,
-                                                            &mut target_owner,
-                                                            &send,
-                                                            &recv);
-                                            found_target = true;
+                                        if index_c.is_some() {
+                                            if ability.target == "target creature".to_owned() ||
+                                                ability.target == "ally creature".to_owned() {
+                                                    move_card(&which[0].trim().parse::<i32>().unwrap(),
+                                                    &mut caster.field,
+                                                    &mut caster.graveyard);
+                                                    trigger_ability("on_death".to_owned(),
+                                                    &which[0]
+                                                    .trim()
+                                                    .parse::<i32>()
+                                                    .unwrap(),
+                                                    &mut caster,
+                                                    &mut target_owner);
+                                                    found_target = true;
+                                                }
                                         }
                                     }
-                                }
                                 //target creature on thier side
                                 else if which[1] == "them" &&
-                                          (ability.target == "target_creature" ||
-                                           ability.target == "target_enemy_creature") {
-                                    let index_t =
-                                        get_index(&which[0].trim().parse::<i32>().unwrap(),
-                                                  &target_owner.field);
+                                    (ability.target == "target_creature" ||
+                                     ability.target == "target_enemy_creature") {
+                                        let index_t =
+                                            get_index(&which[0].trim().parse::<i32>().unwrap(),
+                                            &target_owner.field);
 
-                                    //If its on the opponents side
-                                    if index_t.is_some() {
-                                        if ability.target == "target enemy creature".to_owned() {
-                                            move_card(&which[0].trim().parse::<i32>().unwrap(),
-                                                      &mut target_owner.field,
-                                                      &mut target_owner.graveyard);
-                                            trigger_ability("on_death".to_owned(),
-                                                            &which[0]
-                                                                 .trim()
-                                                                 .parse::<i32>()
-                                                                 .unwrap(),
-                                                            &mut target_owner,
-                                                            &mut caster,
-                                                            &send,
-                                                            &recv);
-                                            found_target = true;
+                                        //If its on the opponents side
+                                        if index_t.is_some() {
+                                            if ability.target == "target enemy creature".to_owned() {
+                                                move_card(&which[0].trim().parse::<i32>().unwrap(),
+                                                &mut target_owner.field,
+                                                &mut target_owner.graveyard);
+                                                trigger_ability("on_death".to_owned(),
+                                                &which[0]
+                                                .trim()
+                                                .parse::<i32>()
+                                                .unwrap(),
+                                                &mut target_owner,
+                                                &mut caster);
+                                                found_target = true;
+                                            }
                                         }
                                     }
-                                }
                                 //Check both fields
                                 else {
                                     println!("invalid target. ");
@@ -299,7 +292,7 @@ pub fn trigger_ability<'a>(trigger: String,
 
                         }
                     } else if ability.target.contains("target_creature") {
-                        let tmp_id: String = ask("What id do you want to target".to_owned(), &send, &recv);
+                        let tmp_id: String = ask("What id do you want to target".to_owned(), &caster.send, &caster.recv);
                         let target_id = tmp_id.parse::<i32>();
 
                         if target_id.is_ok() {
@@ -324,7 +317,7 @@ pub fn trigger_ability<'a>(trigger: String,
                             }
                         }
                     } else if ability.target == "target_ally_creature" {
-                        let tmp_id: String = ask("What id do you want to target".to_owned(), &send, &recv);
+                        let tmp_id: String = ask("What id do you want to target".to_owned(), &caster.send, &caster.recv);
                         let target_id = tmp_id.parse::<i32>();
 
                         if target_id.is_ok() {
@@ -339,7 +332,7 @@ pub fn trigger_ability<'a>(trigger: String,
                             }
                         }
                     } else if ability.target == "target_enemy_creature" {
-                        let tmp_id: String = ask("What id do you want to target".to_owned(), send, recv);
+                        let tmp_id: String = ask("What id do you want to target".to_owned(), &caster.send, &caster.recv);
                         let target_id = tmp_id.parse::<i32>();
 
                         if target_id.is_ok() {
@@ -433,7 +426,7 @@ pub fn modify_stat<'a>(permanant: bool,
 #[cfg(test)]
 mod tests {
     use action::*;
-    use board::*;
+    //use cardgame_board::*;
 
     #[test]
     fn test_move_card() {
@@ -491,7 +484,7 @@ mod tests {
         p2.field.push(card1);
         p2.field.push(card2);
 
-        trigger_ability("on_play".to_owned(), &card.id, &mut p1, &mut p2, &send, &recv);
+        trigger_ability("on_play".to_owned(), &card.id, &mut p1, &mut p2);
         assert!(p2.field[0].attack == 5);
         assert!(p2.field[1].attack == 5);
         assert!(p2.field[0].health == 5);
@@ -533,7 +526,7 @@ mod tests {
 
         p1.field.push(card.clone());
 
-        trigger_ability("on_play".to_owned(), &card.id, &mut p1, &mut p2, &send, &recv);
+        trigger_ability("on_play".to_owned(), &card.id, &mut p1, &mut p2);
         assert!(p1.field[0].health == 5);
         assert!(p1.field[0].max_health == 5);
     }
