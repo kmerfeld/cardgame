@@ -5,10 +5,6 @@ extern crate serde_json;
 extern crate serde_yaml;
 extern crate rand;
 
-use std::sync::mpsc::channel;
-use std::sync::mpsc::{Sender, Receiver};
-use std::thread;
-
 use std::error::Error;
 use std::path::Path;
 
@@ -18,6 +14,7 @@ use std::io::prelude::*;
 use std::fmt;
 
 /* The Card section */
+///Cards the units a player collects, and uses for battles
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Card {
     pub name: String,
@@ -334,13 +331,13 @@ impl Deck {
 }
 
 //TODO: use generic to fuse these two functions
+///Read in a deck
 pub fn read_deck_from_file(input: String) -> Result<Deck, Box<Error>> {
     let p = format!("{}.deck", input);
     let file = File::open(p)?;
     let u: Deck = serde_json::from_reader(file)?;
     Ok(u)
 }
-
 
 fn read_card_class<P: AsRef<Path>>(path: P) -> Result<Vec<CardClass>, Box<Error>> {
     let file = File::open(path)?;
@@ -351,7 +348,7 @@ fn read_card_class<P: AsRef<Path>>(path: P) -> Result<Vec<CardClass>, Box<Error>
 
 
 
-///Generate a Card
+///Read in a deck and create a card based on the deck's CardClasses
 pub fn create_card<'a>(deck: &'a mut Deck) -> Card {
 
     //Pick a random class
@@ -580,7 +577,7 @@ pub fn create_deck(num_cards: i32, mut exp_to_grant: i32, deck_name: String) -> 
 
 #[cfg(test)]
 mod tests {
-    use board::*;
+    use super::*;
 
     #[test]
     fn test_give_exp() {
