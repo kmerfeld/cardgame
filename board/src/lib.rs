@@ -193,7 +193,7 @@ impl fmt::Display for CardClass {
 }
 
 /*  The player section */
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct Player {
     pub name: String,
     pub deck: Deck,
@@ -203,11 +203,14 @@ pub struct Player {
     pub health: i32,
     pub id: i32,
     pub mana: i32,
+    pub send: Sender<String>,
+    pub recv: Receiver<String>,
 
 }
 
 impl Default for Player {
     fn default() -> Player {
+        let (send,recv) = channel();
         return Player {
             name: "default".to_owned(),
             deck: Deck::default(),
@@ -217,6 +220,8 @@ impl Default for Player {
             health: 0,
             id: 0,
             mana: 0,
+            send: send,
+            recv: recv,
         };
     }
 }
@@ -254,6 +259,7 @@ pub fn create_player(name: String, deck: Deck) -> Player {
     let field = Vec::new();
     let graveyard = Vec::new();
     let health: i32 = 30;
+    let (s, r) = channel();
     let player = Player {
         name: name,
         id: 0,
@@ -263,6 +269,8 @@ pub fn create_player(name: String, deck: Deck) -> Player {
         field: field,
         graveyard: graveyard,
         mana: 0,
+        send: s,
+        recv: r,
     };
     return player;
 }
