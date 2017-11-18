@@ -3,4 +3,4 @@ rust:
     - stable
 script: 
     - cd server && cargo test
-    - cd board && cargo test
+    - cd ../board && cargo test
