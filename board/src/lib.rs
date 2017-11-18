@@ -4,6 +4,9 @@ extern crate serde_json;
 extern crate serde_yaml;
 extern crate rand;
 
+use std::sync::mpsc::channel;
+use std::sync::mpsc::{Sender, Receiver};
+
 use std::error::Error;
 use std::path::Path;
 
@@ -202,7 +205,7 @@ impl fmt::Display for CardClass {
 
 /*  The player section */
 ///Players Are the structure that represents the human (or bot) player.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct Player {
     pub name: String,
     pub deck: Deck,
@@ -212,6 +215,8 @@ pub struct Player {
     pub health: i32,
     pub id: i32,
     pub mana: i32,
+    pub send: Sender<String>,
+    pub recv: Receiver<String>,
 }
 
 impl Default for Player {
