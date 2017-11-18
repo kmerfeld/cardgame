@@ -1,6 +1,6 @@
 //use std::io::{self, BufRead};
 use cardgame_board::*;
-use std::sync::mpsc::{channel, Sender, Receiver};
+use std::sync::mpsc::{Sender, Receiver};
 //use std::thread;
 /* Modify board state */
 
@@ -17,7 +17,7 @@ pub fn play_card<'a>(id: &'a i32,
                      mut curr_loc: &'a mut Vec<Card>,
                      mut destination: &'a mut Vec<Card>,
                      deck: &Deck,
-                     mut mana: &'a mut i32) {
+                     mana: &'a mut i32) {
     let index = get_index(&id, &curr_loc);
     if index.is_some() {
         if mana.clone() + 1 > curr_loc[index.unwrap() as usize].cost {
@@ -39,8 +39,8 @@ pub fn play_card<'a>(id: &'a i32,
 }
 //Move a card from one location to another
 pub fn move_card<'a>(id: &'a i32,
-                     mut curr_loc: &'a mut Vec<Card>,
-                     mut destination: &'a mut Vec<Card>) {
+                     curr_loc: &'a mut Vec<Card>,
+                     destination: &'a mut Vec<Card>) {
     //find the index
     let mut card: i32 = -1;
     for i in 0..curr_loc.len() {
@@ -86,8 +86,8 @@ pub fn attack_face<'a>(attacker: &'a i32, mut target: &'a mut Player, mut you: &
 //Force two creatures to fight
 pub fn attack<'a>(attacker: &'a i32,
                   target: &'a i32,
-                  mut you: &'a mut Player,
-                  mut opponent: &'a mut Player) {
+                  you: &'a mut Player,
+                  opponent: &'a mut Player) {
     //For the fighting we shouldnt need the players, but if someone has an ability that when it
     //dies do something to the rest of the field then we need it
 
@@ -153,7 +153,9 @@ fn get_index<'a>(id: &'a i32, location: &'a Vec<Card>) -> Option<i32> {
 fn ask<'a>(message: String, send: &'a Sender<String>, recv: &'a Receiver<String>) -> String {
 
     //Tell the input thread we are ready
-    send.send(message);
+    let result = send.send(message);
+    if !result.is_ok() { println!("Failed to write line, broken pipe"); }
+
     //Ask the home thread for input
     let x = recv.recv().unwrap();
     return x;
@@ -506,17 +508,9 @@ mod tests {
             ..Card::default()
         };
 
-        let card1 = Card {
-            max_health: 0,
-            health: 0,
-            id: 2,
-            ..Card::default()
-        };
-
         card.abilities.push(buff);
 
-
-        let mut d: Deck = Deck {
+        let d: Deck = Deck {
             cards: Vec::new(),
             name_of_deck: "deck".to_owned(),
             ..Deck::default()
@@ -533,7 +527,7 @@ mod tests {
 
     #[test]
     fn test_attack() {
-        let mut card: Card = Card {
+        let card: Card = Card {
             name: "Test_card".to_owned(),
             fatigued: false,
             id: 1,
@@ -541,7 +535,7 @@ mod tests {
             health: 1,
             ..Card::default()
         };
-        let mut d: Deck = Deck {
+        let d: Deck = Deck {
             cards: Vec::new(),
             name_of_deck: "deck".to_owned(),
             ..Deck::default()

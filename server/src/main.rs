@@ -2,23 +2,23 @@ extern crate rand;
 extern crate serde_json;
 extern crate serde_yaml;
 extern crate cardgame_board;
-#[macro_use]
-extern crate serde_derive;
 
 mod gameloop;
 mod action;
 
 use cardgame_board::*;
 use gameloop::gameloop;
-use std::io::{self, BufRead};
+//use std::io::{self, BufRead};
 
 fn main() {
+    //Read in the decks
     let p1_deck = read_deck_from_file("p1.deck".to_owned());
     let p2_deck = read_deck_from_file("p2.deck".to_owned());
 
-    let base_deck = Deck::default();
+
     //For now we can just clone the deck if it doesnt load.
     //later that should cause you to pick a different deck
+    let base_deck = Deck::default();
     let mut p2 = create_player("p2".to_owned(), base_deck.clone());
     let mut p1 = create_player("p1".to_owned(), base_deck.clone());
 
