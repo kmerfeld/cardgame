@@ -1,5 +1,4 @@
-#[macro_use]
-extern crate serde_derive;
+#[macro_use] extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 extern crate serde_yaml;
@@ -56,14 +55,12 @@ impl Default for Card {
 
 impl fmt::Display for Card {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}, {}, {}, {}",
-            self.name,
-            self.health,
-            self.attack,
-            self.cost
-        )
+        write!(f,
+               "{}, {}, {}, {}",
+               self.name,
+               self.health,
+               self.attack,
+               self.cost)
     }
 }
 impl Card {
@@ -219,6 +216,7 @@ pub struct Player {
 
 impl Default for Player {
     fn default() -> Player {
+        let (send,recv) = channel();
         return Player {
             name: "default".to_owned(),
             deck: Deck::default(),
@@ -228,6 +226,8 @@ impl Default for Player {
             health: 0,
             id: 0,
             mana: 0,
+            send: send,
+            recv: recv,
         };
     }
 }
@@ -266,6 +266,7 @@ pub fn create_player(name: String, deck: Deck) -> Player {
     let field = Vec::new();
     let graveyard = Vec::new();
     let health: i32 = 30;
+    let (s, r) = channel();
     let player = Player {
         name: name,
         id: 0,
@@ -275,6 +276,8 @@ pub fn create_player(name: String, deck: Deck) -> Player {
         field: field,
         graveyard: graveyard,
         mana: 0,
+        send: s,
+        recv: r,
     };
     return player;
 }
