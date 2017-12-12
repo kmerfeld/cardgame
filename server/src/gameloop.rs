@@ -10,8 +10,10 @@ use action::*;
 pub fn gameloop(mut player_1: Player, mut player_2: Player) {
 
     //We clone these cards so we will keep the originals
-    //at the end for persistance
+    //at the end for persistence
 
+    //Create board
+    board = Board
     //Initialize tmp values
     player_1.deck.init();
     player_2.deck.init();

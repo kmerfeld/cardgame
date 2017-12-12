@@ -15,6 +15,50 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::fmt;
 
+///The Board is the structure that Holds the two players, All their objects,
+///all effects that apply to everything in both fields, and all the events that have taken place
+pub struct Board {
+    pub next_entity: i32,
+    pub player_1: Player,
+    pub player_2: Player,
+    pub events: Vec<Event>
+}
+
+impl Default for Board {
+    fn default() -> Board {
+        return Board{
+            next_entity: 0,
+            player_1: Player::default(),
+            player_2: Player::default(),
+            events: Vec::new(),
+        };
+    }
+}
+
+impl Board {
+    fn add_player(&mut self, player: Player) -> Result<String, String>{
+        //Check if p1 is empty
+        if self.player_1.name == "Default" {
+            self.player_1 = player;
+            Ok("Player added".to_owned())
+        }
+        else if self.player_2.name == "Default" {
+            self.player_2 = player;
+                Ok("Player added".to_owned())
+        }
+        else {
+            Err("Both player spots are already filled.".to_owned())
+        }
+        
+        
+    }
+}
+
+pub struct Event {
+    pub visibility: i32,
+
+}
+
 /* The Card section */
 ///Cards the units a player collects, and uses for battles
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -91,7 +135,7 @@ impl Card {
     }
     pub fn pretty_print(&self) {
         println!(
-            "[name:{}] | [class:{}] | [id:{}] | [health:{}] | [attack:{}] | [level:{}] | [exp:{}] | [cost:{}] | [fatigued:{}] | [dura:{}]",
+            "[name:{}]\n[class:{}]\n[id:{}]\n[health:{}]\n[attack:{}]\n[level:{}]\n[exp:{}]\n[cost:{}]\n[fatigued:{}]\n[dura:{}]",
             &self.name,
             &self.class_name,
             &self.id,
@@ -110,12 +154,6 @@ impl Card {
         }
     }
 }
-
-///Placeholder event for now. Will be expanded to more easily show info
-pub struct Event{
-    pub msg: String,
-}
-
 
 ///An AbilityRaw is what a part of an ability that contains the effect.
 ///Each AbilityRaw contains what it does. and who it does it to
@@ -442,8 +480,6 @@ pub fn create_card<'a>(deck: &'a mut Deck) -> Card {
             }
         }
     }
-
-    println!("");
 
     return card;
 }
