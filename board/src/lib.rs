@@ -1,4 +1,5 @@
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 extern crate serde_yaml;
@@ -21,12 +22,12 @@ pub struct Board {
     pub next_entity: i32,
     pub player_1: Player,
     pub player_2: Player,
-    pub events: Vec<Event>
+    pub events: Vec<Event>,
 }
 
 impl Default for Board {
     fn default() -> Board {
-        return Board{
+        return Board {
             next_entity: 0,
             player_1: Player::default(),
             player_2: Player::default(),
@@ -36,27 +37,24 @@ impl Default for Board {
 }
 
 impl Board {
-    fn add_player(&mut self, player: Player) -> Result<String, String>{
+    fn add_player(&mut self, player: Player) -> Result<String, String> {
         //Check if p1 is empty
         if self.player_1.name == "Default" {
             self.player_1 = player;
             Ok("Player added".to_owned())
-        }
-        else if self.player_2.name == "Default" {
+        } else if self.player_2.name == "Default" {
             self.player_2 = player;
-                Ok("Player added".to_owned())
-        }
-        else {
+            Ok("Player added".to_owned())
+        } else {
             Err("Both player spots are already filled.".to_owned())
         }
-        
-        
+
+
     }
 }
 
 pub struct Event {
     pub visibility: i32,
-
 }
 
 /* The Card section */
@@ -102,12 +100,14 @@ impl Default for Card {
 
 impl fmt::Display for Card {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
-               "{}, {}, {}, {}",
-               self.name,
-               self.health,
-               self.attack,
-               self.cost)
+        write!(
+            f,
+            "{}, {}, {}, {}",
+            self.name,
+            self.health,
+            self.attack,
+            self.cost
+        )
     }
 }
 impl Card {
@@ -263,7 +263,7 @@ pub struct Player {
 
 impl Default for Player {
     fn default() -> Player {
-        let (send,recv) = channel();
+        let (send, recv) = channel();
         return Player {
             name: "default".to_owned(),
             deck: Deck::default(),
