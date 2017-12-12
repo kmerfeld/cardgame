@@ -166,7 +166,6 @@ fn ask<'a>(message: String, send: &'a Sender<String>, recv: &'a Receiver<String>
 fn say<'a>(message: String, player: &'a Player) {
     let out = player.send.send(message);
     if !out.is_ok() { println!("Failed to send line, broken pipe"); }
-    
 }
 
 
