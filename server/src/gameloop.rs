@@ -13,19 +13,22 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
     //at the end for persistence
 
     //Create board
-    board = Board
+    let mut b = Board::default();
     //Initialize tmp values
     player_1.deck.init();
     player_2.deck.init();
 
-    println!("Starting game");
-    player_1.deck.print();
+    b.add_player(player_1);
+    b.add_player(player_2);
 
-    player_1.deck.save_to_file();
+    println!("Starting game");
+    b.player_1.deck.print();
+
+    b.player_1.deck.save_to_file();
 
     //Determine the id's
-    player_1.id = 1;
-    player_2.id = 2;
+    b.player_1.id = 1;
+    b.player_2.id = 2;
 
     let mut game_is_going: bool = true;
     let mut turn: bool = true;
@@ -34,17 +37,17 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
     //shuffle both decks
     //TODO: shuffle
     let mut rng = thread_rng();
-    rng.shuffle(&mut player_1.deck.cards);
-    rng.shuffle(&mut player_2.deck.cards);
+    rng.shuffle(&mut b.player_1.deck.cards);
+    rng.shuffle(&mut b.player_2.deck.cards);
     // draw cards for each player
     for _ in 0..6 {
         println!("drawing_cards");
-        draw_card(&mut player_1);
-        draw_card(&mut player_2);
+        draw_card(&mut b.player_1);
+        draw_card(&mut b.player_2);
     }
 
-    player_1.print();
-    player_2.print();
+    b.player_1.print();
+    b.player_2.print();
 
     /* Start game */
     while game_is_going {
@@ -52,12 +55,12 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
         let mut current_player;
         let mut other_player;
         if turn == true {
-            current_player = &mut player_1;
-            other_player = &mut player_2;
+            current_player = &mut b.player_1;
+            other_player = &mut b.player_2;
 
         } else {
-            current_player = &mut player_2;
-            other_player = &mut player_1;
+            current_player = &mut b.player_2;
+            other_player = &mut b.player_1;
 
         }
         println!("\n#### This player's turn {}", current_player.name);
@@ -168,8 +171,8 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
         }
     }
 
-    player_1.de_init();
-    player_2.de_init();
+    b.player_1.de_init();
+    b.player_2.de_init();
     println!("Game is over");
 
 }

@@ -37,7 +37,7 @@ impl Default for Board {
 }
 
 impl Board {
-    fn add_player(&mut self, player: Player) -> Result<String, String> {
+    pub fn add_player(&mut self, player: Player) -> Result<String, String> {
         //Check if p1 is empty
         if self.player_1.name == "Default" {
             self.player_1 = player;
