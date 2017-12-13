@@ -4,16 +4,55 @@ use std::sync::mpsc::{Sender, Receiver};
 //use std::thread;
 /* Modify board state */
 
+///The event parser will take a event object and decide what to do with it.
+///
+///draw_card action_param:
+///    [0] = target (player.name)
+///play_card
+///move_card
+///attack
+///attack_face
+///trigger_ability
+///modify_stat
+///add_global_effect
+///remove_global_effects
+pub fn parse_event<'a>(event: Event, mut board: &'a mut Board) -> Result<String, String>{
+    match event.action.as_ref() {
+        //"attack"  => attack(),
+        "draw_card" => draw_card(&mut board, event.action_param[0].clone()),
+        //"play_card" => play_card(),
+        //"move_card"  => move_card(),
+        //"attack_face"  => attack_face(),
+        //"trigger_ability"  => trigger_ability(),
+        //"add_global_effect"  => add_global_effect(),
+        //"remove_global_effects"  => remove_global_effects(),
+        _ =>  return Err("Invalid action".to_owned()),
+    }
+    Ok(format!("event triggered"))
+}
+
 //Allow something to draw a card
-pub fn draw_card<'a>(player: &'a mut Player) {
-    if player.deck.cards.len() > 0 {
-        let topcard: Card = player.deck.cards.pop().unwrap();
-        println!("{}", topcard);
-        player.hand.push(topcard);
+fn draw_card<'a>(board: &'a mut Board, player_name: String) {
+    //Determine player
+    if board.player_1.name == player_name {
+        //Draw the card
+        if board.player_1.deck.cards.len() > 0 {
+            let topcard: Card = board.player_1.deck.cards.pop().unwrap();
+            println!("{}", topcard);
+            board.player_1.hand.push(topcard);
+        }
+    }
+    else if board.player_2.name == player_name {
+        //Draw the card
+        if board.player_2.deck.cards.len() > 0 {
+            let topcard: Card = board.player_2.deck.cards.pop().unwrap();
+            println!("{}", topcard);
+            board.player_2.hand.push(topcard);
+        }
     }
 }
 
-pub fn play_card<'a>(id: &'a i32,
+fn play_card<'a>(id: &'a i32,
                      mut curr_loc: &'a mut Vec<Card>,
                      mut destination: &'a mut Vec<Card>,
                      deck: &Deck,
@@ -38,7 +77,7 @@ pub fn play_card<'a>(id: &'a i32,
     }
 }
 //Move a card from one location to another
-pub fn move_card<'a>(id: &'a i32,
+fn move_card<'a>(id: &'a i32,
                      curr_loc: &'a mut Vec<Card>,
                      destination: &'a mut Vec<Card>) {
     //find the index
@@ -64,7 +103,7 @@ pub fn move_card<'a>(id: &'a i32,
 
 
 // Attack a player right in the face with one of your cards
-pub fn attack_face<'a>(attacker: &'a i32, mut target: &'a mut Player, mut you: &'a mut Player) {
+fn attack_face<'a>(attacker: &'a i32, mut target: &'a mut Player, mut you: &'a mut Player) {
     let mut index: i32 = -1;
     for i in 0..you.field.len() {
         if you.field[i].id == attacker.clone() {
@@ -84,7 +123,7 @@ pub fn attack_face<'a>(attacker: &'a i32, mut target: &'a mut Player, mut you: &
 }
 
 //Force two creatures to fight
-pub fn attack<'a>(attacker: &'a i32,
+fn attack<'a>(attacker: &'a i32,
                   target: &'a i32,
                   you: &'a mut Player,
                   opponent: &'a mut Player) {
@@ -170,7 +209,7 @@ fn say<'a>(message: String, player: &'a Player) {
 
 
 /* Abilities */
-pub fn trigger_ability<'a>(trigger: String,
+fn trigger_ability<'a>(trigger: String,
                            id: &i32,
                            mut caster: &'a mut Player,
                            mut target_owner: &'a mut Player)
@@ -398,7 +437,7 @@ pub fn trigger_ability<'a>(trigger: String,
     }
 }
 
-pub fn modify_stat<'a>(permanant: bool,
+fn modify_stat<'a>(permanant: bool,
                        id: &'a &i32,
                        stat: String,
                        amount: i32,
@@ -582,4 +621,20 @@ mod tests {
 
         assert!(p2.health == 29);
     }
+    #[test]
+    fn test_parse_event() {
+        //Setup
+        let mut b = Board::default();
+        let p1 = Player::default();
+        let x = b.add_player(p1);
+        assert!(x.is_ok());
+        let c = Card::default();
+        b.player_1.deck.cards.push(c);
+
+        //Test Draw event works
+        let a_p = vec!["default".to_owned()];
+        let e = Event{from_player: 1, visibility: 1, action: "draw_card".to_owned(), action_param: a_p};
+        assert!(parse_event(e, &mut b).is_ok());
+    }
 }
+ 

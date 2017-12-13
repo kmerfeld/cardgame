@@ -4,7 +4,6 @@ extern crate rand;
 use rand::{Rng, thread_rng};
 use std::io::{self, BufRead};
 use cardgame_board::*;
-
 use action::*;
 
 pub fn gameloop(mut player_1: Player, mut player_2: Player) {
@@ -14,10 +13,11 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
 
     //Create board
     let mut b = Board::default();
-    //Initialize tmp values
+    //Initialize decks
     player_1.deck.init();
     player_2.deck.init();
 
+    //Add players to the board
     b.add_player(player_1);
     b.add_player(player_2);
 
@@ -33,17 +33,15 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
     let mut game_is_going: bool = true;
     let mut turn: bool = true;
 
-    /* Board initialization*/
     //shuffle both decks
-    //TODO: shuffle
     let mut rng = thread_rng();
     rng.shuffle(&mut b.player_1.deck.cards);
     rng.shuffle(&mut b.player_2.deck.cards);
     // draw cards for each player
     for _ in 0..6 {
         println!("drawing_cards");
-        draw_card(&mut b.player_1);
-        draw_card(&mut b.player_2);
+        //draw_card(&mut b.player_1);
+        //draw_card(&mut b.player_2);
     }
 
     b.player_1.print();
@@ -72,7 +70,7 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
         //First the player draws a card
 
 
-        draw_card(current_player);
+        //draw_card(current_player);
 
         //Turn starts,
         //unfatigue all cards
@@ -80,12 +78,14 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
             i.fatigued = false;
         }
         for i in current_player.field.clone() {
+            /*
             trigger_ability(
                 "on_turn_start".to_owned(),
                 &i.id,
                 &mut current_player,
                 &mut other_player,
             );
+            */
         }
 
         let mut doing_things: bool = true;
@@ -108,6 +108,7 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
                 );
             } else if split[0] == "play" {
                 let id: i32 = split[1].parse().unwrap();
+                /*
                 play_card(
                     &id,
                     &mut current_player.hand,
@@ -121,6 +122,7 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
                     &mut current_player,
                     &mut other_player,
                 );
+                */
             } else if split[0] == "attack" {
                 //This should all be moved to the board section
                 //Make sure enough arguments were supplied
@@ -132,11 +134,11 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
                     let attacker: i32 = split[1].parse().unwrap();
                     let target: i32 = split[2].parse().unwrap();
 
-                    attack(&attacker, &target, &mut current_player, &mut other_player);
+                    //attack(&attacker, &target, &mut current_player, &mut other_player);
                 }
             } else if split[0] == "attack_face" {
                 let mut id: i32 = split[1].parse().unwrap();
-                attack_face(&mut id, &mut other_player, &mut current_player);
+                //attack_face(&mut id, &mut other_player, &mut current_player);
 
 
             } else if split[0] == "win" {
@@ -156,12 +158,14 @@ pub fn gameloop(mut player_1: Player, mut player_2: Player) {
         }
 
         for i in current_player.field.clone() {
+            /*
             trigger_ability(
                 "on_turn_start".to_owned(),
                 &i.id,
                 &mut current_player,
                 &mut other_player,
             );
+            */
         }
 
         if turn == false {

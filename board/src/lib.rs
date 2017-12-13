@@ -42,19 +42,27 @@ impl Board {
         if self.player_1.name == "Default" {
             self.player_1 = player;
             Ok("Player added".to_owned())
-        } else if self.player_2.name == "Default" {
-            self.player_2 = player;
-            Ok("Player added".to_owned())
+        }
+        else if self.player_2.name == "Default" {
+            if self.player_1.name == player.name {
+                Err("The other player already has this name".to_owned())
+            }
+            else {
+                self.player_2 = player;
+                Ok("Player added".to_owned())
+            }
         } else {
             Err("Both player spots are already filled.".to_owned())
         }
-
-
     }
 }
-
+///Every action in the game will be of the event struct.
 pub struct Event {
+    pub from_player: i32,
     pub visibility: i32,
+    pub action: String,
+    pub action_param:  Vec<String>,
+
 }
 
 /* The Card section */
