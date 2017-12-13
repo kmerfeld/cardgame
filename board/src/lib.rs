@@ -273,7 +273,7 @@ impl Default for Player {
     fn default() -> Player {
         let (send, recv) = channel();
         return Player {
-            name: "default".to_owned(),
+            name: "Default".to_owned(),
             deck: Deck::default(),
             field: Vec::new(),
             hand: Vec::new(),
