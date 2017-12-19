@@ -37,6 +37,8 @@ impl Default for Board {
 }
 
 impl Board {
+    pub fn add_event(&mut self, event: Event) { self.events.push(event); }
+
     pub fn add_player(&mut self, player: Player) -> Result<String, String> {
         //Check if p1 is empty
         if self.player_1.name == "Default" {
@@ -56,12 +58,21 @@ impl Board {
         }
     }
 }
-///Every action in the game will be of the event struct.
+///Events are passed around to make things happen. When a player wants to do something,
+///they create an event which is then parsed to do something.
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Event {
     pub from_player: i32,
     pub visibility: i32,
     pub action: String,
-    pub action_param:  Vec<String>,
+    //TODO: make this not just a list,
+    //I would love to have this work as a substruct or something
+    pub action_args: Vec<String>,
+}
+impl Default for Event {
+    fn default() -> Event {
+        return Event{from_player: 0, visibility: 0, action: "Default".to_owned(), action_args: Vec::new()}
+    }
 
 }
 
